@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  api:
+    image: your_project_api
+    container_name: api_service
+    environment:
+      - APP_DEBUG=false
+    ports:
+      - "8080:8080"
+    volumes:
+      - "../../../tool/config:/app/config"
+      - "../../../tool/logs:/app/logs"

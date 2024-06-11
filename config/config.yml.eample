@@ -1,0 +1,52 @@
+AppDebug: true
+HttpServer:
+  Api:
+    Port: ":8080"                 #门户网站类端口,注意前面有冒号
+  Web:
+    Port: ":20201"                 #后端应用类端口,注意前面有冒号
+  AllowCrossDomain: true  #是否允许跨域，默认 允许，更多关于跨域的介绍从参考：https://www.yuque.com/xiaofensinixidaouxiang/bkfhct/kxddzd
+JobServer:
+  Ip: "127.0.0.1"                #任务调度类IP
+  Port: 9081                 #任务调度类端口,注意前面有冒号
+Session:
+  Name: "goskeleton"    #session 名
+  Secret: "ssss"
+  MaxAge: 86400         #session 最大生存时间，单位秒
+  SaveMethod: "memcached"      #session 存储方式，cookie,memcached
+Mysql:
+  Host: "127.0.0.1"
+  DataBase: "heal"
+  Port: 4306
+  User: "root"
+  Pass: ""
+  Charset: "utf8"
+  SetMaxIdleConns: 10
+  SetMaxOpenConns: 128
+  SetConnMaxLifetime: 60    # 连接不活动时的最大生存时间(秒)
+  SlowThreshold: 30            # 慢 SQL 阈值(sql执行时间超过此时间单位（秒），就会触发系统日志记录)
+Redis:
+  Host: "127.0.0.1:6381"
+  Auth: ""
+  IndexDb: 0
+  ConnFailRetryTimes: 1    #连接失败重试次数
+  ConnFailRetryInterval: 2 #连接失败重试间隔秒数
+  PoolSize: 5             #连接池大小  
+  MinIdleConns: 2          #最小空闲连接数
+Logs:
+  GinLogName: "/logs/gin.log"                  #设置 gin 框架的接口访问日志
+  GoSkeletonLogName: "/logs/goskeleton.log"    #设置GoSkeleton项目骨架运行时日志文件名，注意该名称不要与上一条重复 ,避免和 gin 框架的日志掺杂一起，造成混乱。
+  MaxSize: 10                                           #每个日志的最大尺寸(以MB为单位）， 超过该值，系统将会自动进行切割
+  MaxBackups: 7                                        #保留旧日志最大个数
+  MaxAge: 15                                           #保留旧日志最大天数
+  Compress: false                                      #日志备份时，是否进行压缩
+  TextFormat: "json"                                #记录日志的格式，参数选项：console、json ， console 表示一般的文本格式
+  TimePrecision: "second"                         #记录日志时，相关的时间精度，该参数选项：second  、 millisecond ， 分别表示 秒 和 毫秒 ,默认为毫秒级别
+  ResponseLengthMax: 2000                    #记录日志时，响应内容的最大长度，超过该长度，则只展示响应长度
+Memcached:
+    Host: "127.0.0.1:11213"
+MongoDB:
+  Open: true  # 是否启用 MongoDB
+  Uri: "mongodb://x:x@localhost:37027/"
+  Database: "hospital"
+  MaxPoolSize: 10  # 最大连接数
+  MinPoolSize: 1   # 最小空闲连接数

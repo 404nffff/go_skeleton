@@ -1,0 +1,67 @@
+# 使用官方的 Go 语言镜像作为构建阶段基础镜像
+FROM golang:1.22.3-alpine AS builder
+
+RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+
+# 安装 tzdata 包以获取时区数据
+RUN apk --no-cache add tzdata
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# 配置 GOPROXY 环境变量
+ENV GOPROXY=https://goproxy.io,direct
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制所有项目文件
+COPY ../../../ .
+
+RUN rm -rf bin/
+
+RUN go mod tidy
+
+# 构建 API 和 Job 可执行文件
+RUN go build -ldflags="-s -w" -o /api cmd/api/main.go
+RUN go build -ldflags="-s -w" -o /job cmd/job/main.go
+
+# 使用官方的 Alpine 镜像作为中间阶段，获取时区信息
+#FROM alpine:latest AS tzfetch
+
+#RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+
+# 安装 tzdata 包
+#RUN apk --no-cache add tzdata   
+
+# 使用一个较小的基础镜像
+FROM scratch
+#FROM alpine:latest
+
+# 设置工作目录
+WORKDIR /app
+
+# 从 tzfetch 镜像中复制时区信息
+
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /etc/localtime /etc/localtime
+COPY --from=builder /etc/timezone /etc/timezone
+
+# 手动设置时区
+ENV TZ=Asia/Shanghai
+
+
+# 复制可执行文件和配置文件
+COPY --from=builder /api /app/api
+COPY --from=builder /job /app/job
+
+# 暴露端口
+EXPOSE 8080
+EXPOSE 8081
+
+# 设置启动命令（通过环境变量控制）
+CMD ["/app/api"]
+
+
+#docker run -itd -e APP_DEBUG=false -v "D:\www\BaiduSyncdisk\www\go\tool\config":/app/config -v "D:\www\BaiduSyncdisk\www\go\tool\logs":/app/logs -p 8080:8080 808b23d712c7
