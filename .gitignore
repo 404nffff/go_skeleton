@@ -12,7 +12,7 @@
 *.pid
 *.exe
 
-config.yaml
+config.yml
 config_production.yml
 
 bin/
