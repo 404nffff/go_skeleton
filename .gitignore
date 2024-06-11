@@ -18,3 +18,5 @@ config_production.yml
 bin/
 
 *.bak
+
+go.sum
