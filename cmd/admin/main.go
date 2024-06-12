@@ -11,7 +11,7 @@ import (
 	"tool/app/utils/process"
 	"tool/app/utils/tcp"
 	"tool/bootstrap"
-	"tool/routers/api"
+	"tool/routers/admin"
 
 	"go.uber.org/zap"
 )
@@ -24,15 +24,15 @@ func init() {
 	bootstrap.Initialize()
 
 	//初始化协程池
-	bootstrap.InitPool(variable.ConfigYml.GetInt("HttpServer.Api.WorkNum"))
+	bootstrap.InitPool(variable.ConfigYml.GetInt("HttpServer.Admin.WorkNum"))
 }
 
 func main() {
-	process.Initialize("api", startServerInForeground)
+	process.Initialize("admin", startServerInForeground)
 }
 
 func initWebServer() *http.Server {
-	port := variable.ConfigYml.GetString("HttpServer.Api.Port")
+	port := variable.ConfigYml.GetString("HttpServer.Admin.Port")
 
 	if tcp.IsPortInUse(port) {
 		variable.Logs.Fatal("Port is already in use:", zap.String("port", port))
@@ -40,7 +40,8 @@ func initWebServer() *http.Server {
 
 	variable.Logs.Info("Starting server on port", zap.String("port", port))
 
-	router := api.InitRouter()
+	router := admin.InitRouter()
+
 
 	server = &http.Server{
 		Addr:           port,
@@ -56,9 +57,6 @@ func initWebServer() *http.Server {
 func startServerInForeground() {
 
 	bootstrap.InitializeDbConfig()
-
-	//开启tcp协议
-	//go tcp.NewTCPServer(":8081").Start()
 
 	go destroy()
 

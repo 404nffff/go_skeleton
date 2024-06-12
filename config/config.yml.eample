@@ -2,8 +2,10 @@ AppDebug: true
 HttpServer:
   Api:
     Port: ":8080"                 #门户网站类端口,注意前面有冒号
-  Web:
+    WorkNum: 10                 #任务数
+  Admin:
     Port: ":20201"                 #后端应用类端口,注意前面有冒号
+    WorkNum: 10                 #任务数
   AllowCrossDomain: true  #是否允许跨域，默认 允许，更多关于跨域的介绍从参考：https://www.yuque.com/xiaofensinixidaouxiang/bkfhct/kxddzd
 JobServer:
   Ip: "127.0.0.1"                #任务调度类IP

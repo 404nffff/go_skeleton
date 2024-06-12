@@ -31,11 +31,6 @@ func Initialize() {
 
 	//加载日志
 	variable.Logs = zap_log.ZapInit(zap_log.ZapLogHandler)
-	
-	// 创建一个 Ants 池
-	pool, _ := ants.NewAnts(variable.ConfigYml.GetInt("Ants.PoolSize"))
-
-	variable.Pool = pool
 }
 
 // 检查目录是否存在
@@ -113,4 +108,12 @@ func InitializeDbConfig() {
 			variable.Logs.Error("Failed to connect to MongoDB", zap.Error(err))
 		}
 	}
+}
+
+// 初始化协程池
+func InitPool(poolSize int) {
+	// 创建一个 Ants 池
+	pool, _ := ants.NewAnts(poolSize)
+
+	variable.Pool = pool
 }

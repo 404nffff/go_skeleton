@@ -30,3 +30,23 @@ stop: 停止后台服务
 restart: 重启后台服务
 
 
+### 热更新
+1. 使用air工具进行热更新
+2. 安装air
+```shell
+go install github.com/air-verse/air@latest
+```
+
+
+### 静态资源打包 embed
+1. 使用go1.16版本以上
+
+2. 打包静态资源
+```go
+//go:embed admin/layouts/*.tmpl
+//go:embed admin/*.tmpl
+//go:embed admin/user/*.tmpl
+```
+
+
+

@@ -1,3 +1,4 @@
+.vscode
 .buildpath
 .settings/
 .project
@@ -14,9 +15,7 @@
 
 config.yml
 config_production.yml
-
 bin/
-
 *.bak
-
 go.sum
+tmp
