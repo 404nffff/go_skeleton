@@ -50,3 +50,15 @@ go install github.com/air-verse/air@latest
 
 
 
+### docker部署
+1. 构建镜像 
+项目根目录下执行
+```shell
+docker build -t deploy/build/dockerfile .
+```
+2. 运行容器
+```shell
+docker run -itd -e APP_DEBUG=false -v "config":/app/config -v "logs":/app/logs -p 8080:8080 xxxx
+```
+config 目录下存放配置文件
+logs 目录下存放日志文件

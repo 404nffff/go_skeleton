@@ -39,7 +39,7 @@ func (User) TableName() string {
 // @Success 200 {string} string "{"message": "Hello, World!"}"
 // @Router /api/v1/test [get]
 func Test(c *gin.Context) {
-	session.SetSession(c, "test", "test222")
+	session.Set(c, "test", "test222")
 
 	c.JSON(200, gin.H{
 		"message": "Hello, World!",
@@ -47,7 +47,7 @@ func Test(c *gin.Context) {
 }
 
 func Test2(c *gin.Context) {
-	sessionTest := session.GetSession(c, "test")
+	sessionTest := session.Get(c, "test")
 
 	fmt.Println(sessionTest)
 	c.JSON(200, gin.H{
@@ -98,17 +98,18 @@ func TestAnt(c *gin.Context) {
 	//param := c.Query("param")
 
 	// 示例调用
-	params := map[string]any{
-		"age": 30,
-	}
-	result, err := variable.Pool.SubmitTask(myTask, params)
-	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Println("Result:", result)
-	}
+	// params := map[string]any{
+	// 	"age":  30,
+	// 	"name": "123123123",
+	// }
+	// result, err := variable.Pool.SubmitTask(myTask, params)
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// } else {
+	// 	fmt.Println("Result:", result)
+	// }
 
-	c.JSON(http.StatusOK, gin.H{"result": result})
+	//c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 func StatusAnt(c *gin.Context) {

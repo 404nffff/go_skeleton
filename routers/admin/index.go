@@ -2,13 +2,17 @@ package admin
 
 import (
 	"tool/app/http/controller/admin"
+	"tool/app/http/middleware"
 )
 
 // RegisterIndexRouter 注册用户路由
 func RegisterRouter() {
 
 	// 用户登录
-	Api.GET("/login", admin.Test)
+	Api.GET("/admin/login", middleware.RateLimiter(10, 1), admin.LoginPage)
+
+	// 用户登录提交
+	Api.POST("/admin/login_submit", middleware.RateLimiter(10, 1), admin.LoginSubmit)
 
 	RegisterUserRouter()
 }

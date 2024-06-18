@@ -42,7 +42,6 @@ func initWebServer() *http.Server {
 
 	router := admin.InitRouter()
 
-
 	server = &http.Server{
 		Addr:           port,
 		Handler:        router,

@@ -11,7 +11,7 @@ type AntsInterface interface {
 	Submit(task func()) error
 	Release()
 	GetStatus() (int, int)
-	SubmitTask(task func(params map[string]interface{}) string, params map[string]interface{}) (string, error)
+	SubmitTask(task func(params map[string]any) map[string]any, params map[string]any) (map[string]any, error)
 }
 
 // Ants 结构体封装了 ants.Pool
@@ -45,11 +45,10 @@ func (a *Ants) GetStatus() (int, int) {
 	return running, capacity
 }
 
-// SubmitTask 提交带参数的任务到 ants 池，并等待结果返回
-func (a *Ants) SubmitTask(task func(params map[string]interface{}) string, params map[string]interface{}) (string, error) {
-
+// SubmitTask 提交带参数的任务到 ants 池，并等待结果返回，结果为 JSON 格式
+func (a *Ants) SubmitTask(task func(params map[string]any) map[string]any, params map[string]any) (map[string]any, error) {
 	// 创建一个通道来接收任务结果
-	resultChan := make(chan string, 1)
+	resultChan := make(chan map[string]any, 1)
 
 	// 从池中获取一个 goroutine
 	err := a.pool.Submit(func() {
@@ -59,13 +58,21 @@ func (a *Ants) SubmitTask(task func(params map[string]interface{}) string, param
 	})
 
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 
 	// 等待并返回结果
 	result, ok := <-resultChan
 	if !ok {
-		return "", errors.New("failed to receive result")
+		panic(errors.New("task failed"))
 	}
+
+	// // 将结构体转换为 JSON
+	// jsonData, err := json.Marshal(result)
+	// if err != nil {
+	// 	fmt.Println("Error marshalling to JSON:", err)
+	// 	panic(errors.New("task failed"))
+	// }
+
 	return result, nil
 }

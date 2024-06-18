@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ReturnJson 返回json格式数据
 func ReturnJson(Context *gin.Context, httpCode int, dataCode int, msg string, data interface{}) {
 
 	//Context.Header("key2020","value2020")  	//可以根据实际情况在头部添加额外的其他信息
@@ -33,4 +34,16 @@ func Success(c *gin.Context, msg string, data interface{}) {
 func Fail(c *gin.Context, dataCode int, msg string, data interface{}) {
 	ReturnJson(c, http.StatusBadRequest, dataCode, msg, data)
 	c.Abort()
+}
+
+// 服务响应
+func ServiceResponse(httpCode int, msg string, data interface{}) map[string]any {
+
+	response := map[string]any{
+		"code": httpCode,
+		"msg":  msg,
+		"data": data,
+	}
+
+	return response
 }

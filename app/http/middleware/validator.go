@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"tool/app/http/validator/api"
+	web_validate "tool/app/http/validator"
 	"tool/app/utils/common"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +19,7 @@ var validate = validator.New()
 func ValidateParams() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		route := c.FullPath()
-		paramType, exists := api.RouteParamMap[route]
+		paramType, exists := web_validate.RouteParamMap[route]
 		if !exists {
 			c.Next()
 			return
@@ -28,7 +28,7 @@ func ValidateParams() gin.HandlerFunc {
 		params := reflect.New(paramType).Interface()
 
 		// 绑定参数
-		if err := c.ShouldBindQuery(params); err != nil {
+		if err := c.ShouldBind(params); err != nil {
 			handleValidationError(c, err)
 			return
 		}

@@ -43,9 +43,9 @@ func InitRouter() *gin.Engine {
 	initMiddleware()
 
 	//注册静态文件
-	//Api.Static("/static", variable.BasePath+"/public/static")
+	//Api.Static("/public/admin", variable.BasePath+"/public/admin")
+	
 	staticServer := http.FileServer(http.FS(templates.Components))
-
 
 	Api.GET("/static/*filepath", func(c *gin.Context) {
 		http.StripPrefix("/static/", staticServer).ServeHTTP(c.Writer, c.Request)
@@ -86,4 +86,7 @@ func initMiddleware() {
 
 	//初始化参数验证
 	Api.Use(middleware.ValidateParams())
+
+	// 使用 panic 恢复中间件
+	Api.Use(middleware.PanicRecovery())
 }

@@ -10,9 +10,9 @@ import (
 
 // 嵌入 templates 目录下的所有文件
 //
-//go:embed admin/layouts/*.tmpl
-//go:embed admin/*.tmpl
-//go:embed admin/user/*.tmpl
+//go:embed admin/layouts/*.html
+//go:embed admin/*.html
+//go:embed admin/user/*.html
 var Content embed.FS
 
 // 嵌入 components 目录下的所有文件
@@ -22,7 +22,7 @@ var Components embed.FS
 
 // Load 封装模板加载逻辑
 func Load() (*template.Template, error) {
-	return template.New("").ParseFS(Content, "admin/*.tmpl", "admin/user/*.tmpl", "admin/layouts/*.tmpl")
+	return template.New("").ParseFS(Content, "admin/*.html", "admin/user/*.html", "admin/layouts/*.html")
 }
 
 // 列出嵌入文件系统中的所有文件
