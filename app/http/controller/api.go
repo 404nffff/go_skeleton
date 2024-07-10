@@ -2,10 +2,15 @@ package controller
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 	"tool/app/global/variable"
-	"tool/app/utils/session"
-	"tool/app/utils/udp"
+	"tool/pkg/oss"
+	"tool/pkg/session"
+	"tool/pkg/udp"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -110,6 +115,16 @@ func TestAnt(c *gin.Context) {
 	// }
 
 	//c.JSON(http.StatusOK, gin.H{"result": result})
+
+	task := func(params map[string]any) map[string]any {
+		// 模拟一个任务
+		time.Sleep(5 * time.Second)
+		variable.Logs.Info("Task completed")
+		return nil
+	}
+	variable.Pool.SubmitTask(task, map[string]any{})
+
+	c.JSON(http.StatusOK, gin.H{"message": "task submitted"})
 }
 
 func StatusAnt(c *gin.Context) {
@@ -131,4 +146,54 @@ func myTask(params map[string]any) string {
 		return "Invalid parameter"
 	}
 	return fmt.Sprintf("Processed: name=%s, age=%d", name, age)
+}
+
+func Upload(c *gin.Context) {
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File upload error"})
+		return
+	}
+
+	// 保存文件到临时目录
+	tempFilePath := filepath.Join(os.TempDir(), header.Filename)
+	out, err := os.Create(tempFilePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving file"})
+		return
+	}
+	defer out.Close()
+
+	fileContent, err := io.ReadAll(file)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reading file"})
+		return
+	}
+
+	_, err = out.Write(fileContent)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error writing file"})
+		return
+	}
+
+	ossConfig := oss.OssConfig{
+		Endpoint:        "oss-cn-beijing.aliyuncs.com",
+		AccessKeyID:     "DdZh6CfOjy0mKFe4",
+		AccessKeySecret: "uQNOq2AU3uTm0DdMnmL6NXU8H7PUoK",
+		BucketName:      "wechat-app-yuyue-assets",
+	}
+
+	ossClient, _ := oss.NewOSSClient(ossConfig)
+
+	// 上传文件到 OSS
+	fileName, err := ossClient.UploadFileFromPath(header.Filename, tempFilePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 删除临时文件
+	os.Remove(tempFilePath)
+
+	c.JSON(http.StatusOK, gin.H{"message": "File uploaded successfully", "file_name": fileName})
 }

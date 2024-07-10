@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"tool/app/utils/common"
-	"tool/app/utils/session"
+	"tool/pkg/session"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,7 +33,6 @@ func AuthMiddleware() gin.HandlerFunc {
 			common.Fail(c, 401, "未登录", nil)
 			return
 		}
-		
 
 		c.Next()
 	}

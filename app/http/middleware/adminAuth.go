@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"tool/app/utils/session"
+	"tool/pkg/session"
 
 	"github.com/gin-gonic/gin"
 )

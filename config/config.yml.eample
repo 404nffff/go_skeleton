@@ -52,3 +52,17 @@ MongoDB:
   Database: "hospital"
   MaxPoolSize: 10  # 最大连接数
   MinPoolSize: 1   # 最小空闲连接数
+# OSS 配置
+OSS:
+ # 阿里云 OSS
+  Aliyun:
+    Open: true  # 是否启用 OSS
+    Endpoint: "oss-cn-hangzhou.aliyuncs.com"
+    AccessKeyId: "xxxx"
+    AccessKeySecret: "xxx"
+    Bucket: "xxx"
+    Dir: "uploads"
+    Timeout: 60
+    MaxSize: 10
+    AllowExt: "jpg,jpeg,png,gif,mp4,avi,rmvb,rm,asf,divx,mpg,mpeg,mpe,wmv,mkv,vob,3gp,3g2,mov,flv,f4v,webm,ogv,ogg,drc,mng,avi,mov,qt,wmv,yuv,rm,rmvb,asf,amv,mp4,m4p,m4v,mpg,mp2,mpeg,mpe,mpv,mpg,mpeg,m2v,m4v,svi,3gp,3g2,mxf,roq,nsv,flv,f4v,f4p,f4a,f4b"
+    AllowMime: "image/jpeg,image/png,image/gif,video/mp4,video/avi,video/rmvb,video/rm,video/asf,video/divx,video/mpg,video/mpeg,video/mpe,video/wmv,video/mkv,video/vob,video/3gp,video/3g2,video/mov,video/flv,video/f4v,video/webm,video/ogv,video/ogg,video/drc,video/mng,video/avi,video/mov,video/qt,video/wmv,video/yuv,video/rm,video/rmvb,video/asf,video/amv,video/mp4,video/m4p,video/m4v,video/mpg,video/mp2,video/mpeg,video/mpe,video/mpv,video/mpg,video/mpeg,video/m2v,video/m4v,video/svi,video/3gp,video/3g2,video/mxf,video/roq,video/nsv,video/flv,video/f4v,video/f4p,video/f4a,video/f4b"

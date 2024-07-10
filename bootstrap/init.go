@@ -3,13 +3,13 @@ package bootstrap
 import (
 	"os"
 	"tool/app/global/variable"
-	"tool/app/utils/ants"
-	"tool/app/utils/memcached"
-	"tool/app/utils/mongo"
-	"tool/app/utils/mysql"
-	"tool/app/utils/redis"
-	"tool/app/utils/yml_config"
-	"tool/app/utils/zap_log"
+	"tool/pkg/ants"
+	"tool/pkg/memcached"
+	"tool/pkg/mongo"
+	"tool/pkg/mysql"
+	"tool/pkg/redis"
+	"tool/pkg/yml_config"
+	"tool/pkg/zap_log"
 
 	"go.uber.org/zap"
 )

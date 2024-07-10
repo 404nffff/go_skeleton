@@ -3,7 +3,7 @@ package admin
 import (
 	"fmt"
 	"net/http"
-	"tool/app/utils/session"
+	"tool/pkg/session"
 
 	"github.com/gin-gonic/gin"
 )

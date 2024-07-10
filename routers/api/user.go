@@ -19,7 +19,8 @@ func RegisterUserRouter() {
 	userGroup.GET("/testudp", controller.TestUdp)
 	userGroup.GET("/task", controller.TestAnt)
 	userGroup.GET("/s", controller.StatusAnt)
-
+	userGroup.POST("/upload", controller.Upload)
+	
 	userGroup.Use(middleware.AuthMiddleware()) // 将中间件应用于这个路由组
 	{
 		// 用户登录

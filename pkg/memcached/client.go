@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"tool/app/utils/event_manage"
+	"tool/pkg/event_manage"
 
 	"github.com/bradfitz/gomemcache/memcache"
 )

@@ -1,16 +1,18 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 	"tool/app/global/variable"
-	"tool/app/utils/event_manage"
-	"tool/app/utils/process"
-	"tool/app/utils/tcp"
 	"tool/bootstrap"
+	"tool/pkg/event_manage"
+	"tool/pkg/process"
+	"tool/pkg/tcp"
 	"tool/routers/api"
 
 	"go.uber.org/zap"
@@ -73,8 +75,7 @@ func startServerInForeground() {
 }
 
 func destroy() {
-
-	//打印日志
+	// 打印日志
 	variable.Logs.Info("Destroying server...")
 
 	c := make(chan os.Signal, 1)
@@ -83,6 +84,21 @@ func destroy() {
 		received := <-c
 		variable.Logs.Warn("ProcessKilled", zap.String("信号值", received.String()))
 		(event_manage.CreateEventManageFactory()).FuzzyCall(variable.EventDestroyPrefix)
+
+		// 等待所有任务完成
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			variable.Pool.Release()
+		}()
+		wg.Wait()
+
+		// 关闭服务器
+		if err := server.Shutdown(context.Background()); err != nil {
+			variable.Logs.Fatal("Server forced to shutdown:", zap.Error(err))
+		}
+
 		os.Exit(1)
 	}()
 }

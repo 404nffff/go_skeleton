@@ -6,8 +6,8 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"tool/app/utils/ants"
-	"tool/app/utils/yml_config/ymlconfig_interf"
+	"tool/pkg/ants"
+	"tool/pkg/yml_config/ymlconfig_interf"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-redis/redis/v8"
