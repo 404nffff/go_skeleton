@@ -32,6 +32,7 @@ type OssConfig struct {
 	ReadWriteTimeout int    // 读写超时时间
 }
 
+// 创建 OSS 客户端
 func NewOSSClient(config OssConfig) (*OSSClient, error) {
 
 	// 设置HTTP连接超时时间为20秒，HTTP读取或写入超时时间为60秒。
@@ -51,6 +52,7 @@ func NewOSSClient(config OssConfig) (*OSSClient, error) {
 	return &OSSClient{Bucket: bucket}, nil
 }
 
+// 上传文件
 func (o *OSSClient) UploadFileFromPath(fileName, filePath string) (string, error) {
 	ossFileName := fmt.Sprintf("%d-%s", time.Now().Unix(), fileName)
 	err := o.Bucket.PutObjectFromFile(ossFileName, filePath)
@@ -59,4 +61,13 @@ func (o *OSSClient) UploadFileFromPath(fileName, filePath string) (string, error
 	}
 
 	return ossFileName, nil
+}
+
+// 删除文件
+func (o *OSSClient) DeleteFile(fileName string) error {
+	err := o.Bucket.DeleteObject(fileName)
+	if err != nil {
+		return fmt.Errorf("error deleting file: %v", err)
+	}
+	return nil
 }

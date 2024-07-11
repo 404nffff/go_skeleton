@@ -1,0 +1,4 @@
+Local:
+    Host: "127.0.0.1:11213"
+    ConnFailRetryTimes: 1    #连接失败重试次数
+    ConnFailRetryInterval: 2 #连接失败重试间隔秒数

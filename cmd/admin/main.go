@@ -55,8 +55,6 @@ func initWebServer() *http.Server {
 
 func startServerInForeground() {
 
-	bootstrap.InitializeDbConfig()
-
 	go destroy()
 
 	defer variable.Pool.Release()

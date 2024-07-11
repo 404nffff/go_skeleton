@@ -13,23 +13,18 @@ import (
 // RedisClient 是一个全局的 Redis 客户端
 var (
 	clients sync.Map
-	mu      sync.Mutex
 )
 
-type RedisConfig struct {
-	Host                  string // Redis 服务器地址，格式为 "host:port"。
-	Auth                  string // 可选的密码。如果不需要密码认证，请留空。
-	IndexDb               int    // 数据库编号。默认为 0。
-	PoolSize              int    // 每个 CPU 的最大连接数。默认为 10。
-	MinIdleConns          int    // 最小空闲连接数。在建立新连接较慢时很有用。
-	ConnFailRetryTimes    int    // 放弃前的最大重试次数。默认为不重试。
-	ConnFailRetryInterval int    // 重试之间的最小退避时间。默认为 8 毫秒；-1 禁用退避。
-	EventDestroyPrefix    string // 事件销毁前缀
-}
+func createClient(name string) *redis.Client {
 
-func createClient(name string, config RedisConfig) *redis.Client {
-	mu.Lock()
-	defer mu.Unlock()
+	//加载配置
+	config := loadConfig(name)
+
+	//判断是否为空
+	if config.Host == "" {
+		log.Fatalf("Failed to get Redis config: %s", name)
+		return nil
+	}
 
 	options := &redis.Options{
 		Network: "tcp",       // 网络类型，默认是 "tcp"，也可以使用 "unix"。
@@ -77,8 +72,8 @@ func createClient(name string, config RedisConfig) *redis.Client {
 			log.Printf("Successfully connected to Redis")
 
 			eventManageFactory := event_manage.CreateEventManageFactory()
-			if _, exists := eventManageFactory.Get(config.EventDestroyPrefix + "Redis_" + name); !exists {
-				eventManageFactory.Set(config.EventDestroyPrefix+"Redis_"+name, func(args ...interface{}) {
+			if _, exists := eventManageFactory.Get(config.EventDestroyPrefix); !exists {
+				eventManageFactory.Set(config.EventDestroyPrefix, func(args ...interface{}) {
 					_ = client.Close()
 					log.Printf("Destroying Redis connection")
 				})
@@ -95,7 +90,7 @@ func createClient(name string, config RedisConfig) *redis.Client {
 	return nil
 }
 
-func NewClient(name string, config RedisConfig) *redis.Client {
-	client, _ := clients.LoadOrStore(name, createClient(name, config))
+func NewClient(name string) *redis.Client {
+	client, _ := clients.LoadOrStore(name, createClient(name))
 	return client.(*redis.Client)
 }

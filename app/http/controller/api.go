@@ -2,19 +2,14 @@ package controller
 
 import (
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"time"
 	"tool/app/global/variable"
-	"tool/pkg/oss"
+	"tool/app/utils/db_client"
 	"tool/pkg/session"
 	"tool/pkg/udp"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.uber.org/zap"
 )
 
 // User 定义用户模型
@@ -63,7 +58,8 @@ func Test2(c *gin.Context) {
 // GetUsersHandler 获取用户列表
 func GetUsersHandler(c *gin.Context) {
 	var users []User
-	if err := variable.Mysql.Find(&users).Error; err != nil {
+
+	if err := db_client.MysqlLocal().Find(&users).Error; err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
@@ -73,23 +69,23 @@ func GetUsersHandler(c *gin.Context) {
 
 func GetUserMongo(c *gin.Context) {
 
-	params, _ := c.GetQuery("name")
+	//params, _ := c.GetQuery("name")
 
-	//Example query usage
-	//filter := bson.D{{"updated_at", "2023-03-21 16:54:53"}}
-	result := variable.MongoDB.Collection("t_chatgpt_log").FindOne(c, bson.D{})
+	// //Example query usage
+	// //filter := bson.D{{"updated_at", "2023-03-21 16:54:53"}}
+	// result := db_client.MongoLocal.Collection("t_chatgpt_log").FindOne(c, bson.D{})
 
-	// Decode the result
-	var doc map[string]interface{}
-	err := result.Decode(&doc)
-	if err != nil {
-		variable.Logs.Error("Failed to decode document", zap.Error(err))
-	} else {
-		fmt.Printf("Found a document: %v\n", doc)
-		variable.Logs.Info("Found a document", zap.Any("document", doc))
+	// // Decode the result
+	// var doc map[string]interface{}
+	// err := result.Decode(&doc)
+	// if err != nil {
+	// 	variable.Logs.Error("Failed to decode document", zap.Error(err))
+	// } else {
+	// 	fmt.Printf("Found a document: %v\n", doc)
+	// 	variable.Logs.Info("Found a document", zap.Any("document", doc))
 
-		c.JSON(200, gin.H{"users": doc, "params": params})
-	}
+	// 	c.JSON(200, gin.H{"users": doc, "params": params})
+	// }
 
 }
 
@@ -146,54 +142,4 @@ func myTask(params map[string]any) string {
 		return "Invalid parameter"
 	}
 	return fmt.Sprintf("Processed: name=%s, age=%d", name, age)
-}
-
-func Upload(c *gin.Context) {
-	file, header, err := c.Request.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File upload error"})
-		return
-	}
-
-	// 保存文件到临时目录
-	tempFilePath := filepath.Join(os.TempDir(), header.Filename)
-	out, err := os.Create(tempFilePath)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving file"})
-		return
-	}
-	defer out.Close()
-
-	fileContent, err := io.ReadAll(file)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reading file"})
-		return
-	}
-
-	_, err = out.Write(fileContent)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error writing file"})
-		return
-	}
-
-	ossConfig := oss.OssConfig{
-		Endpoint:        "oss-cn-beijing.aliyuncs.com",
-		AccessKeyID:     "DdZh6CfOjy0mKFe4",
-		AccessKeySecret: "uQNOq2AU3uTm0DdMnmL6NXU8H7PUoK",
-		BucketName:      "wechat-app-yuyue-assets",
-	}
-
-	ossClient, _ := oss.NewOSSClient(ossConfig)
-
-	// 上传文件到 OSS
-	fileName, err := ossClient.UploadFileFromPath(header.Filename, tempFilePath)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// 删除临时文件
-	os.Remove(tempFilePath)
-
-	c.JSON(http.StatusOK, gin.H{"message": "File uploaded successfully", "file_name": fileName})
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 	"tool/pkg/event_manage"
 
 	"github.com/bradfitz/gomemcache/memcache"
@@ -11,41 +12,56 @@ import (
 
 var (
 	clients sync.Map // 用于存储多个 Memcached 客户端实例
-	mu      sync.Mutex
 )
-
-type MemcachedConfig struct {
-	Host               string // Memcached 服务器地址，格式为 "host:port"。
-	EventDestroyPrefix string // 事件销毁前缀
-}
 
 // NewClient 创建一个新的 Memcached 客户端
 // 使用 sync.Once 确保只初始化一次
-func NewClient(name string, config MemcachedConfig) *memcache.Client {
-	client, _ := clients.LoadOrStore(name, createClient(name, config))
+func NewClient(name string) *memcache.Client {
+	client, loaded := clients.LoadOrStore(name, createClient(name))
+
+	if loaded {
+		return client.(*memcache.Client)
+	}
+
 	return client.(*memcache.Client)
 }
 
 // createClient 创建一个新的 Memcached 客户端
-func createClient(name string, config MemcachedConfig) *memcache.Client {
-	mu.Lock()
-	defer mu.Unlock()
+func createClient(name string) *memcache.Client {
+	// 加载配置
+	config := loadConfig(name)
+
+	// 判断是否为空
+	if config.Host == "" {
+		log.Fatalf("Failed to get Memcached config: %s", name)
+		return nil
+	}
+
+	maxRetries := config.ConnFailRetryTimes                                    // 最大重试次数
+	retryInterval := time.Duration(config.ConnFailRetryInterval) * time.Second // 重试间隔
 
 	var client *memcache.Client
 	var err error
 
-	client = memcache.New(config.Host)
+	for i := 0; i < maxRetries; i++ {
+		client = memcache.New(config.Host)
+		err = Ping(client)
+		if err == nil {
+			break // 连接成功，跳出循环
+		}
+		log.Printf("Failed to connect to Memcached, retrying... (%d/%d)", i+1, maxRetries)
+		time.Sleep(retryInterval)
+	}
 
-	err = Ping(client)
 	if err != nil {
-		log.Fatalf("Failed to connect to Memcached: %v", err)
+		log.Fatalf("Failed to connect to Memcached after %d attempts: %v", maxRetries, err)
+		return nil
 	}
 
 	// 注册销毁事件
 	eventManageFactory := event_manage.CreateEventManageFactory()
-	if _, exists := eventManageFactory.Get(config.EventDestroyPrefix + "Memcached_" + name); exists == false {
-		eventManageFactory.Set(config.EventDestroyPrefix+"Memcached_"+name, func(args ...interface{}) {
-			// Memcached 客户端不需要显式关闭连接
+	if _, exists := eventManageFactory.Get(config.EventDestroyPrefix); exists == false {
+		eventManageFactory.Set(config.EventDestroyPrefix, func(args ...interface{}) {
 			log.Printf("Destroying Memcached connection for %s", name)
 			client.Close()
 		})

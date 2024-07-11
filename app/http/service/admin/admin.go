@@ -2,12 +2,12 @@ package admin
 
 import (
 	"fmt"
-	"tool/app/global/variable"
 	"tool/app/http/model"
 	"tool/app/utils/common"
+	"tool/app/utils/db_client"
 )
 
-var mysql = variable.Mysql
+var mysql = db_client.MysqlLocal()
 
 // Login 登录函数
 func Login(data map[string]any) map[string]any {
@@ -15,7 +15,7 @@ func Login(data map[string]any) map[string]any {
 	// password := data["password"].(string)
 
 	var users model.Admin
-	if err := variable.Mysql.Where(&model.Admin{Username: username}).Find(&users).Error; err != nil {
+	if err := mysql.Where(&model.Admin{Username: username}).Find(&users).Error; err != nil {
 		return common.ServiceResponse(400, "用户或密码错误", nil)
 	}
 

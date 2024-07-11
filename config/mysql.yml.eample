@@ -1,0 +1,11 @@
+Local:
+  Host: "127.0.0.1"
+  DataBase: "go_skeleton"
+  Port: 4306
+  User: "root"
+  Pass: "xxx"
+  Charset: "utf8"
+  SetMaxIdleConns: 10
+  SetMaxOpenConns: 128
+  SetConnMaxLifetime: 60    # 连接不活动时的最大生存时间(秒)
+  SlowThreshold: 30            # 慢 SQL 阈值(sql执行时间超过此时间单位（秒），就会触发系统日志记录)

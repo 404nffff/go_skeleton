@@ -1,0 +1,6 @@
+Local:
+  Open: true  # 是否启用 MongoDB
+  Uri: "mongodb://hospital:xxx@localhost:37027/"
+  Database: "hospital"
+  MaxPoolSize: 10  # 最大连接数
+  MinPoolSize: 1   # 最小空闲连接数

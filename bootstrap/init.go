@@ -4,14 +4,8 @@ import (
 	"os"
 	"tool/app/global/variable"
 	"tool/pkg/ants"
-	"tool/pkg/memcached"
-	"tool/pkg/mongo"
-	"tool/pkg/mysql"
-	"tool/pkg/redis"
 	"tool/pkg/yml_config"
 	"tool/pkg/zap_log"
-
-	"go.uber.org/zap"
 )
 
 // 初始化加载配置
@@ -25,7 +19,7 @@ func Initialize() {
 		configName = "config_production"
 	}
 
-	variable.ConfigYml = yml_config.InitViper(configName)
+	variable.ConfigYml = yml_config.LoadConfig(configName)
 
 	checkDir()
 
@@ -45,69 +39,6 @@ func checkDir() {
 		_ = os.Mkdir(variable.BasePath+"/public", os.ModePerm)
 	}
 
-}
-
-// 初始化数据库配置
-func InitializeDbConfig() {
-	//加载redis
-	redisConfig := redis.RedisConfig{
-		Host:                  variable.ConfigYml.GetString("Redis.Host"),
-		Auth:                  variable.ConfigYml.GetString("Redis.Auth"),
-		IndexDb:               variable.ConfigYml.GetInt("Redis.IndexDb"),
-		PoolSize:              variable.ConfigYml.GetInt("Redis.PoolSize"),
-		MinIdleConns:          variable.ConfigYml.GetInt("Redis.MinIdleConns"),
-		ConnFailRetryTimes:    variable.ConfigYml.GetInt("Redis.ConnFailRetryTimes"),
-		ConnFailRetryInterval: variable.ConfigYml.GetInt("Redis.ConnFailRetryInterval"),
-		EventDestroyPrefix:    variable.EventDestroyPrefix,
-	}
-	variable.Redis = redis.NewClient("Local", redisConfig)
-
-	//加载memcached
-	memcachedConfig := memcached.MemcachedConfig{
-		Host:               variable.ConfigYml.GetString("Memcached.Host"),
-		EventDestroyPrefix: variable.EventDestroyPrefix,
-	}
-
-	variable.Memcached = memcached.NewClient("Local", memcachedConfig)
-
-	// 数据库配置
-	config1 := mysql.DatabaseConfig{
-		User:               variable.ConfigYml.GetString("Mysql.User"),
-		Pass:               variable.ConfigYml.GetString("Mysql.Pass"),
-		Host:               variable.ConfigYml.GetString("Mysql.Host"),
-		Port:               variable.ConfigYml.GetString("Mysql.Port"),
-		Database:           variable.ConfigYml.GetString("Mysql.Database"),
-		Charset:            variable.ConfigYml.GetString("Mysql.Charset"),
-		SetMaxIdleConns:    variable.ConfigYml.GetInt("Mysql.SetMaxIdleConns"),
-		SetMaxOpenConns:    variable.ConfigYml.GetInt("Mysql.SetMaxOpenConns"),
-		SetConnMaxLifetime: variable.ConfigYml.GetInt("Mysql.SetConnMaxLifetime"),
-		EventDestroyPrefix: variable.EventDestroyPrefix,
-	}
-
-	//加载orm
-	db, err := mysql.NewDBClient("heal", config1)
-	if err != nil {
-		variable.Logs.Error("Failed to connect to database", zap.Error(err))
-	} else {
-		variable.Mysql = db
-	}
-
-	if variable.ConfigYml.GetBool("MongoDB.Open") {
-		// 数据库配置
-		mongoConfig := mongo.DatabaseConfig{
-			URI:                variable.ConfigYml.GetString("MongoDB.Uri"),
-			Database:           variable.ConfigYml.GetString("MongoDB.Database"),
-			MaxPoolSize:        uint64(variable.ConfigYml.GetInt("MongoDB.MaxPoolSize")),
-			MinPoolSize:        uint64(variable.ConfigYml.GetInt("MongoDB.MinPoolSize")),
-			EventDestroyPrefix: variable.EventDestroyPrefix,
-		}
-
-		// 初始化mongo
-		variable.MongoDB, err = mongo.InitMongo(mongoConfig)
-		if err != nil {
-			variable.Logs.Error("Failed to connect to MongoDB", zap.Error(err))
-		}
-	}
 }
 
 // 初始化协程池

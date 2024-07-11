@@ -57,7 +57,6 @@ func initWebServer() *http.Server {
 
 func startServerInForeground() {
 
-	bootstrap.InitializeDbConfig()
 
 	//开启tcp协议
 	//go tcp.NewTCPServer(":8081").Start()

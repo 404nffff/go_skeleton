@@ -9,11 +9,6 @@ import (
 	"tool/pkg/ants"
 	"tool/pkg/yml_config/ymlconfig_interf"
 
-	"github.com/bradfitz/gomemcache/memcache"
-	"github.com/go-redis/redis/v8"
-	"go.mongodb.org/mongo-driver/mongo"
-	"gorm.io/gorm"
-
 	"go.uber.org/zap"
 )
 
@@ -26,14 +21,6 @@ var (
 	ConfigYml ymlconfig_interf.YmlConfigInterf // 全局配置文件指针
 
 	Logs *zap.Logger // 全局日志指针
-
-	Redis *redis.Client // 全局 Redis 指针
-
-	Memcached *memcache.Client // 全局 Memcached 指针
-
-	Mysql *gorm.DB // 全局 Mysql 指针
-
-	MongoDB *mongo.Database // 全局 MongoDB 指针
 
 	Pool ants.AntsInterface // 全局协程池指针
 )

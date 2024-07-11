@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"tool/app/global/variable"
+	"tool/app/utils/db_client"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -30,7 +31,12 @@ func SessionMiddleware() gin.HandlerFunc {
 			HttpOnly: true,
 		})
 	} else if saveMethod == "memcached" {
-		store = memcached.NewStore(variable.Memcached, "", []byte(secret))
+
+
+		// 本地连接 Memcached
+		memcachedClient := db_client.MemLocal()
+
+		store = memcached.NewStore(memcachedClient, "", []byte(secret))
 	}
 
 	return sessions.Sessions(name, store)

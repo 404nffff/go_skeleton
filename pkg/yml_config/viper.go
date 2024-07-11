@@ -14,7 +14,8 @@ type ymlConfig struct {
 	viper *viper.Viper
 }
 
-func InitViper(configName string) ymlconfig_interf.YmlConfigInterf {
+// 加载配置文件
+func LoadConfig(configName string) ymlconfig_interf.YmlConfigInterf {
 
 	basePath := variable.BasePath
 

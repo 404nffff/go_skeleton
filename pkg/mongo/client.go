@@ -13,31 +13,33 @@ import (
 )
 
 // 全局 sync.Map 变量
-var clients sync.Map
-var dbs sync.Map
+var (
+	dbs sync.Map
+)
 
-// DatabaseConfig 定义数据库配置结构体
-type DatabaseConfig struct {
-	URI                string // 数据库连接 URI 字符串 (e.g. "mongodb://localhost:27017/")
-	Database           string // 数据库名称
-	MaxPoolSize        uint64 // 连接池中的最大连接数
-	MinPoolSize        uint64 // 连接池中的最小连接数
-	EventDestroyPrefix string // 事件销毁前缀
-}
-
-// InitMongo 初始化 MongoDB 客户端，并支持多个数据库连接
-func InitMongo(dbConfig DatabaseConfig) (*mongo.Database, error) {
+// NewClient 初始化 MongoDB 客户端，并支持多个数据库连接
+func NewClient(configName string) *mongo.Database {
 	// 使用 LoadOrStore 确保在并发环境中只初始化一次数据库连接
-	db, loaded := dbs.LoadOrStore(dbConfig.Database, createMongoClient(dbConfig))
+	db, loaded := dbs.LoadOrStore(configName, createMongoClient(configName))
 	if loaded {
-		return db.(*mongo.Database), nil
+		return db.(*mongo.Database)
 	}
 
-	return db.(*mongo.Database), nil
+	return db.(*mongo.Database)
 }
 
 // createMongoClient 创建新的 MongoDB 客户端
-func createMongoClient(dbConfig DatabaseConfig) *mongo.Database {
+func createMongoClient(configName string) *mongo.Database {
+
+	// 加载配置
+	dbConfig := loadConfig(configName)
+
+	// 判断是否为空
+	if dbConfig.URI == "" {
+		log.Fatalf("Failed to get MongoDB config: %s", configName)
+		return nil
+	}
+
 	// 设置客户端连接选项
 	clientOptions := options.Client().
 		ApplyURI(dbConfig.URI + dbConfig.Database).
@@ -65,7 +67,7 @@ func createMongoClient(dbConfig DatabaseConfig) *mongo.Database {
 
 	// 注册销毁事件
 	eventManageFactory := event_manage.CreateEventManageFactory()
-	eventName := dbConfig.EventDestroyPrefix + "Mongo_" + dbConfig.Database
+	eventName := dbConfig.EventDestroyPrefix
 	if _, exists := eventManageFactory.Get(eventName); !exists {
 		eventManageFactory.Set(eventName, func(args ...interface{}) {
 			CloseMongo(client, dbConfig.Database)
@@ -73,7 +75,6 @@ func createMongoClient(dbConfig DatabaseConfig) *mongo.Database {
 		})
 	}
 
-	clients.Store(dbConfig.Database, client)
 	return client.Database(dbConfig.Database)
 }
 

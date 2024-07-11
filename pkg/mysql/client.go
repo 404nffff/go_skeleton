@@ -11,35 +11,33 @@ import (
 )
 
 // 全局 sync.Map 变量
-var clients sync.Map
+var (
+	clients sync.Map
+)
 
-// DatabaseConfig 定义数据库配置结构体
-type DatabaseConfig struct {
-	User               string // 数据库用户名
-	Pass               string // 数据库密码
-	Host               string // 数据库地址
-	Port               string // 数据库端口
-	Database           string // 数据库名称
-	Charset            string // 数据库字符集
-	SetMaxIdleConns    int    // 连接池中的最大空闲连接数
-	SetMaxOpenConns    int    // 数据库的最大连接数量
-	SetConnMaxLifetime int    // 连接的最大可复用时间
-	EventDestroyPrefix string // 事件销毁前缀
-}
-
-// NewDBClient 初始化 GORM 客户端，并支持多个数据库连接
-func NewDBClient(name string, config DatabaseConfig) (*gorm.DB, error) {
+// NewClient 初始化 GORM 客户端，并支持多个数据库连接
+func NewClient(name string) *gorm.DB {
 	// 使用 LoadOrStore 确保在并发环境中只初始化一次数据库连接
-	db, loaded := clients.LoadOrStore(name, createDBClient(name, config))
+	db, loaded := clients.LoadOrStore(name, createDBClient(name))
 	if loaded {
-		return db.(*gorm.DB), nil
+		return db.(*gorm.DB)
 	}
 
-	return db.(*gorm.DB), nil
+	return db.(*gorm.DB)
 }
 
 // createDBClient 创建新的数据库客户端
-func createDBClient(name string, config DatabaseConfig) *gorm.DB {
+func createDBClient(name string) *gorm.DB {
+
+	//加载配置
+	config := loadConfig(name)
+
+	//判断是否为空
+	if config.Host == "" {
+		log.Fatalf("Failed to get Mysql config: %s", name)
+		return nil
+	}
+
 	// 构建 DSN (数据源名称)
 	dsn := config.User + ":" +
 		config.Pass + "@tcp(" +
@@ -80,7 +78,7 @@ func createDBClient(name string, config DatabaseConfig) *gorm.DB {
 
 	// 创建事件管理工厂并注册销毁事件
 	eventManageFactory := event_manage.CreateEventManageFactory()
-	eventName := config.EventDestroyPrefix + "Mysql_" + name
+	eventName := config.EventDestroyPrefix
 	if _, exists := eventManageFactory.Get(eventName); !exists {
 		eventManageFactory.Set(eventName, func(args ...interface{}) {
 			if err := sqlDB.Close(); err != nil {

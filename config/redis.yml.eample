@@ -1,0 +1,8 @@
+Local:
+  Host: "127.0.0.1:6381"
+  Auth: ""
+  IndexDb: 0
+  ConnFailRetryTimes: 1    #连接失败重试次数
+  ConnFailRetryInterval: 2 #连接失败重试间隔秒数
+  PoolSize: 5             #连接池大小  
+  MinIdleConns: 2          #最小空闲连接数
