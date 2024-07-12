@@ -21,17 +21,22 @@ var (
 // NewClient 初始化 MongoDB 客户端，并支持多个数据库连接
 func NewClient(configName string) *mongo.Database {
 	// 使用 LoadOrStore 确保在并发环境中只初始化一次数据库连接
-	db, loaded := dbs.LoadOrStore(configName, createMongoClient(configName))
+	db, loaded := dbs.LoadOrStore(configName, func() interface{} {
+		return createMongoClient(configName)
+	})
+
+	database := db.(*mongo.Database)
+
 	if loaded {
 		// 检查连接是否有效
-		client := db.(*mongo.Database).Client()
+		client := database.Client()
 		if !isValidConnection(client) {
 			log.Printf("MongoDB 连接丢失，正在重新连接: %s", configName)
-			db = createMongoClient(configName)
-			dbs.Store(configName, db)
+			database = createMongoClient(configName)
+			dbs.Store(configName, database)
 		}
 	}
-	return db.(*mongo.Database)
+	return database
 }
 
 // isValidConnection 检查 MongoDB 连接是否有效

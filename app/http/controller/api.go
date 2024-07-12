@@ -71,6 +71,8 @@ func GetUserMongo(c *gin.Context) {
 
 	//params, _ := c.GetQuery("name")
 
+	db_client.MongoLocal().Collection("t_chatgpt_log").FindOne(c, nil)
+
 	// //Example query usage
 	// //filter := bson.D{{"updated_at", "2023-03-21 16:54:53"}}
 	// result := db_client.MongoLocal.Collection("t_chatgpt_log").FindOne(c, bson.D{})
