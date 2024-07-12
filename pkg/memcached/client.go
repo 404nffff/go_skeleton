@@ -15,12 +15,16 @@ var (
 )
 
 // NewClient 创建一个新的 Memcached 客户端
-// 使用 sync.Once 确保只初始化一次
 func NewClient(name string) *memcache.Client {
 	client, loaded := clients.LoadOrStore(name, createClient(name))
 
 	if loaded {
-		return client.(*memcache.Client)
+		// 检查连接是否有效
+		if !isValidConnection(client.(*memcache.Client)) {
+			log.Printf("Memcached 连接丢失，正在重新连接: %s", name)
+			client = createClient(name)
+			clients.Store(name, client)
+		}
 	}
 
 	return client.(*memcache.Client)
@@ -33,8 +37,7 @@ func createClient(name string) *memcache.Client {
 
 	// 判断是否为空
 	if config.Host == "" {
-		log.Fatalf("Failed to get Memcached config: %s", name)
-		return nil
+		panic(fmt.Sprintf("Failed to get Memcached config: %s", name))
 	}
 
 	maxRetries := config.ConnFailRetryTimes                                    // 最大重试次数
@@ -54,16 +57,15 @@ func createClient(name string) *memcache.Client {
 	}
 
 	if err != nil {
-		log.Fatalf("Failed to connect to Memcached after %d attempts: %v", maxRetries, err)
-		return nil
+		panic(fmt.Sprintf("Failed to connect to Memcached after %d attempts: %v", maxRetries, err))
 	}
 
 	// 注册销毁事件
 	eventManageFactory := event_manage.CreateEventManageFactory()
-	if _, exists := eventManageFactory.Get(config.EventDestroyPrefix); exists == false {
+	if _, exists := eventManageFactory.Get(config.EventDestroyPrefix); !exists {
 		eventManageFactory.Set(config.EventDestroyPrefix, func(args ...interface{}) {
 			log.Printf("Destroying Memcached connection for %s", name)
-			client.Close()
+			client = nil
 		})
 	}
 
@@ -88,6 +90,12 @@ func Ping(client *memcache.Client) error {
 	}
 
 	return nil
+}
+
+// isValidConnection 检查 Memcached 连接是否有效
+func isValidConnection(client *memcache.Client) bool {
+	err := Ping(client)
+	return err == nil
 }
 
 // Set 设置一个键值对

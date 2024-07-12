@@ -1,7 +1,7 @@
 package memcached
 
 import (
-	"log"
+	"fmt"
 	"tool/app/global/variable"
 	"tool/pkg/yml_config"
 )
@@ -26,7 +26,7 @@ func loadConfig(conn string) MemcachedConfig {
 	// 	ConnFailRetryInterval: 2 #连接失败重试间隔秒数
 
 	if memcachedConfig.GetString(conn+".Host") == "" {
-		log.Fatalf("Failed to get Memcached config: %s", conn)
+		panic(fmt.Sprintf("Failed to get Memcached config: %s", conn))
 	}
 
 	config := MemcachedConfig{

@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"tool/app/global/variable"
 	"tool/app/http/middleware"
@@ -19,7 +19,7 @@ func InitRouter() *gin.Engine {
 	tmpl, err := templates.Load()
 
 	if err != nil {
-		log.Fatalf("Failed to load templates: %v", err)
+		panic(fmt.Sprintf("Failed to load templates: %v", err))
 	}
 
 	//判断是否是调试模式
@@ -44,7 +44,7 @@ func InitRouter() *gin.Engine {
 
 	//注册静态文件
 	//Api.Static("/public/admin", variable.BasePath+"/public/admin")
-	
+
 	staticServer := http.FileServer(http.FS(templates.Components))
 
 	Api.GET("/static/*filepath", func(c *gin.Context) {
@@ -74,7 +74,7 @@ func initMiddleware() {
 	//使用 LoggerMiddleware 中间件
 	logger, err := middleware.InitLogger()
 	if err != nil {
-		log.Fatalf("Failed to initialize zap logger: %v", err)
+		panic(fmt.Sprintf("Failed to initialize zap logger: %v", err))
 	}
 	defer logger.Sync()
 

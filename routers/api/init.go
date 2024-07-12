@@ -1,7 +1,7 @@
 package api
 
 import (
-	"log"
+	"fmt"
 	"tool/app/global/variable"
 	"tool/app/http/middleware"
 
@@ -49,7 +49,7 @@ func initMiddleware() {
 	//使用 LoggerMiddleware 中间件
 	logger, err := middleware.InitLogger()
 	if err != nil {
-		log.Fatalf("Failed to initialize zap logger: %v", err)
+		panic(fmt.Sprintf("Failed to initialize zap logger: %v", err))
 	}
 	defer logger.Sync()
 

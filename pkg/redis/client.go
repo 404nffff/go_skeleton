@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -15,50 +16,33 @@ var (
 	clients sync.Map
 )
 
+// createClient 创建 Redis 客户端
 func createClient(name string) *redis.Client {
 
-	//加载配置
+	// 加载配置
 	config := loadConfig(name)
 
-	//判断是否为空
+	// 判断是否为空
 	if config.Host == "" {
-		log.Fatalf("Failed to get Redis config: %s", name)
-		return nil
+		panic(fmt.Sprintf("Failed to get Redis config: %s", name))
 	}
 
 	options := &redis.Options{
-		Network: "tcp",       // 网络类型，默认是 "tcp"，也可以使用 "unix"。
-		Addr:    config.Host, // Redis 服务器地址，格式为 "host:port"。
-		// 可选的用户名，用于 Redis ACL 支持。如果不使用 ACL，可以留空。
-		Username: "",
-		// 可选的密码。如果 Redis 服务器设置了密码认证，请在这里填写密码。
-		// 如果没有设置密码认证，可以留空。
-		Password: config.Auth,
-		// 数据库编号，默认是 0。可以选择不同的数据库编号。
-		DB: config.IndexDb,
-		// 在放弃之前最大的重试次数。默认情况下，不重试失败的命令。
-		MaxRetries: 3,
-		// 每次重试之间的最小退避时间。默认是 8 毫秒；-1 禁用退避。
-		MinRetryBackoff: 8 * time.Millisecond,
-		// 每次重试之间的最大退避时间。默认是 512 毫秒；-1 禁用退避。
-		MaxRetryBackoff: 512 * time.Millisecond,
-		// 拨号超时时间，用于建立新连接。默认是 5 秒。
-		DialTimeout: 5 * time.Second,
-		// 读操作的超时时间。如果达到该时间，命令将失败并返回超时错误。
-		// 默认是 3 秒。
-		ReadTimeout: 3 * time.Second,
-		// 写操作的超时时间。如果达到该时间，命令将失败并返回超时错误。
-		// 默认是 ReadTimeout。
-		WriteTimeout: 3 * time.Second,
-		// 最大连接数，默认是每个 CPU 10 个连接。
-		PoolSize: config.PoolSize,
-		// 最小空闲连接数。保持这些空闲连接是有用的，特别是当建立新连接很慢时。
-		MinIdleConns: config.MinIdleConns,
-		// 连接的最大生存时间。到达此时间后，客户端将关闭连接。默认是不会关闭老连接。
-		MaxConnAge: 0,
-		// 空闲连接的超时时间。应该小于服务器的超时时间。默认是 5 分钟；-1 禁用空闲连接检查。
-		IdleTimeout: 5 * time.Minute,
-		// 空闲检查的频率。默认是 1 分钟；-1 禁用空闲连接检查。
+		Network:            "tcp",
+		Addr:               config.Host,
+		Username:           "",
+		Password:           config.Auth,
+		DB:                 config.IndexDb,
+		MaxRetries:         3,
+		MinRetryBackoff:    8 * time.Millisecond,
+		MaxRetryBackoff:    512 * time.Millisecond,
+		DialTimeout:        5 * time.Second,
+		ReadTimeout:        3 * time.Second,
+		WriteTimeout:       3 * time.Second,
+		PoolSize:           config.PoolSize,
+		MinIdleConns:       config.MinIdleConns,
+		MaxConnAge:         0,
+		IdleTimeout:        5 * time.Minute,
 		IdleCheckFrequency: 1 * time.Minute,
 	}
 
@@ -86,11 +70,27 @@ func createClient(name string) *redis.Client {
 		time.Sleep(time.Duration(config.ConnFailRetryInterval) * time.Second)
 	}
 
-	log.Fatalf("Failed to connect to Redis, reached maximum retry attempts")
-	return nil
+	panic(fmt.Sprintf("Failed to connect to Redis, reached maximum retry attempts"))
 }
 
+// isValidConnection 检查 Redis 连接是否有效
+func isValidConnection(client *redis.Client) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	err := client.Ping(ctx).Err()
+	return err == nil
+}
+
+// NewClient 初始化 Redis 客户端，并支持多个 Redis 连接
 func NewClient(name string) *redis.Client {
-	client, _ := clients.LoadOrStore(name, createClient(name))
+	client, loaded := clients.LoadOrStore(name, createClient(name))
+	if loaded {
+		// 检查连接是否有效
+		if !isValidConnection(client.(*redis.Client)) {
+			log.Printf("Redis 连接丢失，正在重新连接: %s", name)
+			client = createClient(name)
+			clients.Store(name, client)
+		}
+	}
 	return client.(*redis.Client)
 }

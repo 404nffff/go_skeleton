@@ -1,7 +1,7 @@
 package yml_config
 
 import (
-	"log"
+	"fmt"
 	"reflect"
 	"time"
 	"tool/app/global/variable"
@@ -30,7 +30,7 @@ func LoadConfig(configName string) ymlconfig_interf.YmlConfigInterf {
 
 	// 读取配置文件并处理错误
 	if err := v.ReadInConfig(); err != nil {
-		log.Fatalf("读取配置文件出错: %s", err)
+		panic(fmt.Sprintf("读取配置文件出错: %s", err))
 	}
 
 	return &ymlConfig{viper: v}

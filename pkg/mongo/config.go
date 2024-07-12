@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"log"
+	"fmt"
 	"tool/app/global/variable"
 	"tool/pkg/yml_config"
 )
@@ -29,7 +29,7 @@ func loadConfig(conn string) DatabaseConfig {
 	// 	MinPoolSize: 1   # 最小空闲连接数
 
 	if !mongoConfig.GetBool(conn + ".Open") {
-		log.Fatalf("Failed to get MongoDB config: %s", conn)
+		panic(fmt.Sprintf("Failed to get MongoDB config: %s", conn))
 	}
 
 	config := DatabaseConfig{

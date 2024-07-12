@@ -74,7 +74,7 @@ func startServerInBackground(pidFile, logFile, processName string, startFunc fun
 
 	d, err := cntxt.Reborn()
 	if err != nil {
-		log.Fatalf("Unable to run: %s", err)
+		panic(fmt.Sprintf("Unable to run: %s", err))
 	}
 	if d != nil {
 		return
@@ -82,14 +82,14 @@ func startServerInBackground(pidFile, logFile, processName string, startFunc fun
 	defer func() {
 		err := cntxt.Release()
 		if err != nil {
-			log.Fatalf("Unable to release context: %s", err)
+			panic(fmt.Sprintf("Unable to release context: %s", err))
 		}
 	}()
 	log.Print("Daemon started")
 
 	// 设置进程名称
 	// if err := setProcessName(processName); err != nil {
-	// 	log.Fatalf("Failed to set process name: %v", err)
+	// 	panic(fmt.Sprintf("Failed to set process name: %v", err)
 	// }
 
 	startFunc()
@@ -108,13 +108,13 @@ func stopServer(pidFile string) {
 	cntxt := &daemon.Context{PidFileName: pidFile}
 	d, err := cntxt.Search()
 	if err != nil {
-		log.Fatalf("Unable to find the daemon: %s", err)
+		panic(fmt.Sprintf("Unable to find the daemon: %s", err))
 	}
 
 	if d != nil {
 		err := d.Signal(syscall.SIGTERM)
 		if err != nil {
-			log.Fatalf("Unable to send signal to the daemon: %s", err)
+			panic(fmt.Sprintf("Unable to send signal to the daemon: %s", err))
 		}
 
 		log.Print("Daemon stopped")
@@ -164,6 +164,6 @@ func Initialize(service string, startFunc func()) {
 	case "restart":
 		restartServer(pidFile, logFile, processName, startFunc)
 	default:
-		log.Fatalf("Invalid command. Use start, start debug, stop, or restart.")
+		panic(fmt.Sprintf("Invalid command. Use start, start debug, stop, or restart."))
 	}
 }

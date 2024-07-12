@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"log"
+	"fmt"
 	"tool/app/global/variable"
 	"tool/pkg/yml_config"
 )
@@ -39,7 +39,7 @@ func loadConfig(conn string) DatabaseConfig {
 	// 	SlowThreshold: 30            # 慢 SQL 阈值(sql执行时间超过此时间单位（秒），就会触发系统日志记录)
 
 	if mysqlConfig.GetString(conn+".User") == "" {
-		log.Fatalf("Failed to get Mysql config: %s", conn)
+		panic(fmt.Sprintf("Failed to get Mysql config: %s", conn))
 	}
 
 	config := DatabaseConfig{

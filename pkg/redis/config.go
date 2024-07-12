@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"log"
+	"fmt"
 	"tool/app/global/variable"
 	"tool/pkg/yml_config"
 )
@@ -33,7 +33,7 @@ func loadConfig(conn string) RedisConfig {
 	// 	MinIdleConns: 2          #最小空闲连接数
 
 	if redisConfig.GetString(conn+".Host") == "" {
-		log.Fatalf("Failed to get Redis config: %s", conn)
+		panic(fmt.Sprintf("Failed to get Redis config: %s", conn))
 	}
 
 	config := RedisConfig{

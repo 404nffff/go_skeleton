@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -22,10 +23,23 @@ func NewClient(configName string) *mongo.Database {
 	// 使用 LoadOrStore 确保在并发环境中只初始化一次数据库连接
 	db, loaded := dbs.LoadOrStore(configName, createMongoClient(configName))
 	if loaded {
-		return db.(*mongo.Database)
+		// 检查连接是否有效
+		client := db.(*mongo.Database).Client()
+		if !isValidConnection(client) {
+			log.Printf("MongoDB 连接丢失，正在重新连接: %s", configName)
+			db = createMongoClient(configName)
+			dbs.Store(configName, db)
+		}
 	}
-
 	return db.(*mongo.Database)
+}
+
+// isValidConnection 检查 MongoDB 连接是否有效
+func isValidConnection(client *mongo.Client) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	err := client.Ping(ctx, readpref.Primary())
+	return err == nil
 }
 
 // createMongoClient 创建新的 MongoDB 客户端
@@ -36,8 +50,7 @@ func createMongoClient(configName string) *mongo.Database {
 
 	// 判断是否为空
 	if dbConfig.URI == "" {
-		log.Fatalf("Failed to get MongoDB config: %s", configName)
-		return nil
+		panic(fmt.Sprintf("Failed to get MongoDB config: %s", configName))
 	}
 
 	// 设置客户端连接选项
@@ -52,15 +65,13 @@ func createMongoClient(configName string) *mongo.Database {
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %v", err)
-		return nil
+		panic(fmt.Sprintf("Failed to connect to MongoDB: %v", err))
 	}
 
 	// 检查连接
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		log.Fatalf("Failed to ping MongoDB: %v", err)
-		return nil
+		panic(fmt.Sprintf("Failed to ping MongoDB: %v", err))
 	}
 
 	log.Printf("Connected to MongoDB successfully, database: %s", dbConfig.Database)
