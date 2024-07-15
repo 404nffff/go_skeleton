@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"tool/pkg/oss"
+	"tool/app/utils/oss"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,17 +38,8 @@ func Upload(c *gin.Context) {
 		return
 	}
 
-	ossConfig := oss.OssConfig{
-		Endpoint:        "",
-		AccessKeyID:     "",
-		AccessKeySecret: "",
-		BucketName:      "",
-	}
-
-	ossClient, _ := oss.NewOSSClient(ossConfig)
-
 	// 上传文件到 OSS
-	fileName, err := ossClient.UploadFileFromPath(header.Filename, tempFilePath)
+	fileName, err := oss.UploadFile(header.Filename, tempFilePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
