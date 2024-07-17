@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 	"tool/app/global/variable"
+	"tool/app/http/routers/api"
 	"tool/bootstrap"
 	"tool/pkg/event_manage"
 	"tool/pkg/process"
 	"tool/pkg/tcp"
-	"tool/routers/api"
 
 	"go.uber.org/zap"
 )
@@ -56,7 +56,6 @@ func initWebServer() *http.Server {
 }
 
 func startServerInForeground() {
-
 
 	//开启tcp协议
 	//go tcp.NewTCPServer(":8081").Start()

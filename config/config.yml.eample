@@ -43,5 +43,6 @@ UploadFile:
   MaxSize: 10 # 单位 MB
   AllowExt: "jpg,jpeg,png,gif"
   AllowMime: "image/jpeg,image/png,image/gif"
-  Dir: "uploads"
-  Timeout: 60
+  ResizeWidth: 800
+  ResizeHeight: 600
+  JPEGQuality: 80

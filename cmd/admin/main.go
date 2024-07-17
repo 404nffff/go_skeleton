@@ -7,11 +7,11 @@ import (
 	"syscall"
 	"time"
 	"tool/app/global/variable"
+	"tool/app/http/routers/admin"
 	"tool/bootstrap"
 	"tool/pkg/event_manage"
 	"tool/pkg/process"
 	"tool/pkg/tcp"
-	"tool/routers/admin"
 
 	"go.uber.org/zap"
 )

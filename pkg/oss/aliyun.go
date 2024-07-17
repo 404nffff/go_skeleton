@@ -2,7 +2,6 @@ package oss
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
@@ -53,14 +52,16 @@ func NewOSSClient(config OssConfig) (*OSSClient, error) {
 }
 
 // 上传文件
+// fileName: 文件名
+// filePath: 文件路径
 func (o *OSSClient) UploadFileFromPath(fileName, filePath string) (string, error) {
-	ossFileName := fmt.Sprintf("%d-%s", time.Now().Unix(), fileName)
-	err := o.Bucket.PutObjectFromFile(ossFileName, filePath)
+
+	err := o.Bucket.PutObjectFromFile(fileName, filePath)
 	if err != nil {
 		return "", fmt.Errorf("error uploading file: %v", err)
 	}
 
-	return ossFileName, nil
+	return fileName, nil
 }
 
 // 删除文件
