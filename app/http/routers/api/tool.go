@@ -1,15 +1,18 @@
 package api
 
-import "tool/app/http/controller/tool"
+import (
+	"tool/app/http/controller/tool"
+	"tool/pkg/web_server"
+)
 
 // 注册路由
 func init() {
 
-	registerRoutesToGroup("/tool/oss",
-		route{
-			method:  "POST",
-			path:    "/upload",
-			handler: tool.Upload,
+	web_server.RegisterRoutes("/tool/oss",
+		web_server.Route{
+			Method:  "POST",
+			Path:    "/upload",
+			Handler: tool.Upload,
 		},
 	)
 }

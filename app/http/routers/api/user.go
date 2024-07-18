@@ -3,6 +3,7 @@ package api
 import (
 	"tool/app/http/controller"
 	"tool/app/http/middleware"
+	"tool/pkg/web_server"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,28 +11,28 @@ import (
 func init() {
 
 	//     // 注册路由到 "/api/v1" 路由组
-	// registerRoutesToGroup("/api/v1",
+	// web_server.RegisterRoutes("/api/v1",
 	//     route{
-	//         method:  "GET",
-	//         path:    "/users",
-	//         handler: handlers.getUsers,
+	//         Method:  "GET",
+	//         Path:    "/users",
+	//         Handler: Handlers.getUsers,
 	//         middlewares: []gin.HandlerFunc{
 	//             middlewares.authentication,
 	//             middlewares.authorization,
 	//         },
 	//     },
 	//     route{
-	//         method:  "POST",
-	//         path:    "/users",
-	//         handler: handlers.createUser,
+	//         Method:  "POST",
+	//         Path:    "/users",
+	//         Handler: Handlers.createUser,
 	//         middlewares: []gin.HandlerFunc{
 	//             middlewares.validation,
 	//         },
 	//     },
 	//     route{
-	//         method:  "GET",
-	//         path:    "/products",
-	//         handler: handlers.getProducts,
+	//         Method:  "GET",
+	//         Path:    "/products",
+	//         Handler: Handlers.getProducts,
 	//     },
 	// )
 
@@ -43,16 +44,16 @@ func init() {
 	// )
 
 	// // 注册路由到 "/api/v2" 路由组
-	// registerRoutesToGroup("/api/v2",
+	// web_server.RegisterRoutes("/api/v2",
 	//     route{
-	//         method:  "GET",
-	//         path:    "/orders",
-	//         handler: handlers.getOrders,
+	//         Method:  "GET",
+	//         Path:    "/orders",
+	//         Handler: Handlers.getOrders,
 	//     },
 	//     route{
-	//         method:  "POST",
-	//         path:    "/orders",
-	//         handler: handlers.createOrder,
+	//         Method:  "POST",
+	//         Path:    "/orders",
+	//         Handler: Handlers.createOrder,
 	//         middlewares: []gin.HandlerFunc{
 	//             middlewares.authentication,
 	//         },
@@ -65,56 +66,58 @@ func init() {
 	//     middlewares.recovery,
 	// )
 
-	registerRoutesToGroup("",
-		route{
-			method:  "GET",
-			path:    "/test",
-			handler: controller.Test,
+	//web_server.RegisterMiddleware("/user", middleware.AuthMiddleware())
+
+	web_server.RegisterRoutes("",
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/test",
+			Handler: controller.Test,
 		},
 	)
 
 	// 注册路由到 "/user" 路由组
-	registerRoutesToGroup("/user",
-		route{
-			method:  "GET",
-			path:    "/test",
-			handler: controller.Test,
+	web_server.RegisterRoutes("/user",
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/test",
+			Handler: controller.Test,
 		},
-		route{
-			method:  "GET",
-			path:    "/test2",
-			handler: controller.Test2,
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/test2",
+			Handler: controller.Test2,
 		},
-		route{
-			method:  "GET",
-			path:    "/user",
-			handler: controller.GetUsersHandler,
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/user",
+			Handler: controller.GetUsersHandler,
 		},
-		route{
-			method:  "GET",
-			path:    "/user2",
-			handler: controller.GetUserMongo,
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/user2",
+			Handler: controller.GetUserMongo,
 		},
-		route{
-			method:  "GET",
-			path:    "/testudp",
-			handler: controller.TestUdp,
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/testudp",
+			Handler: controller.TestUdp,
 		},
-		route{
-			method:  "GET",
-			path:    "/task",
-			handler: controller.TestAnt,
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/task",
+			Handler: controller.TestAnt,
 		},
-		route{
-			method:  "GET",
-			path:    "/s",
-			handler: controller.StatusAnt,
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/s",
+			Handler: controller.StatusAnt,
 		},
-		route{
-			method:  "GET",
-			path:    "/login",
-			handler: controller.GetUsersHandler,
-			middlewares: []gin.HandlerFunc{
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/login",
+			Handler: controller.GetUsersHandler,
+			Middlewares: []gin.HandlerFunc{
 				middleware.AuthMiddleware(),
 			},
 		})
