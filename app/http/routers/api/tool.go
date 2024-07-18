@@ -1,6 +1,7 @@
 package api
 
 import (
+	"tool/app/http/controller"
 	"tool/app/http/controller/tool"
 	"tool/pkg/web_server"
 )
@@ -13,6 +14,14 @@ func init() {
 			Method:  "POST",
 			Path:    "/upload",
 			Handler: tool.Upload,
+		},
+	)
+
+	web_server.RegisterRoutes("",
+		web_server.Route{
+			Method:  "GET",
+			Path:    "/echo",
+			Handler: controller.HandleWebSocket,
 		},
 	)
 }
