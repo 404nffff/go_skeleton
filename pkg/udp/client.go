@@ -3,7 +3,7 @@ package udp
 import (
 	"fmt"
 	"net"
-	"tool/app/global/variable"
+	"tool/global/variable"
 )
 
 func Send(message string) {

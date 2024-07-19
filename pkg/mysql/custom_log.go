@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"tool/app/global/variable"
+	"tool/global/variable"
 
 	"go.uber.org/zap"
 	gormLog "gorm.io/gorm/logger"

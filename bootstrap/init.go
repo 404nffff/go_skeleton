@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"os"
-	"tool/app/global/variable"
+	"tool/global/variable"
 	"tool/pkg/ants"
 	"tool/pkg/yml_config"
 	"tool/pkg/zap_log"

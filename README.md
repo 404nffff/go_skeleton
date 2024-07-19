@@ -18,7 +18,7 @@ https://github.com/qifengzhang007/GinSkeleton
 
 ### 启动命令
 ```shell
-go run server/api/main.go [start| start debug| stop | restart]
+go run cmd/api/main.go [start| start debug| stop | restart]
 ```
 
 start: 启动后台服务

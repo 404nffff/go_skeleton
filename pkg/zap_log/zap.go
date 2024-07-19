@@ -3,7 +3,7 @@ package zap_log
 import (
 	"log"
 	"time"
-	"tool/app/global/variable"
+	"tool/global/variable"
 
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"

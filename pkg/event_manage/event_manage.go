@@ -3,7 +3,7 @@ package event_manage
 import (
 	"strings"
 	"sync"
-	"tool/app/global/variable"
+	"tool/global/variable"
 )
 
 // 定义一个全局事件存储变量，本模块只负责存储 键 => 函数 ， 相对容器来说功能稍弱，但是调用更加简单、方便、快捷

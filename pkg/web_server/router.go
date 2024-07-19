@@ -3,7 +3,6 @@ package web_server
 import (
 	"fmt"
 	"sync"
-	"tool/app/http/middleware"
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -73,18 +72,14 @@ func (r *Router) Init() *gin.Engine {
 // initMiddleware 初始化中间件
 func (r *Router) initMiddleware() {
 	// 初始化日志
-	logger, err := middleware.InitLogger()
+	logger, err := InitLogger()
 	if err != nil {
 		panic(fmt.Sprintf("Failed to initialize zap logger: %v", err))
 	}
 	r.logger = logger
 
-	if r.config.AllowCrossDomain {
-		r.engine.Use(middleware.Cors())
-	}
-
 	r.engine.Use(gin.Recovery())
-	r.engine.Use(middleware.LoggerMiddleware(r.logger))
+	r.engine.Use(LoggerMiddleware(r.logger))
 
 	// 添加自定义中间件
 	for _, m := range r.config.CustomMiddlewares {

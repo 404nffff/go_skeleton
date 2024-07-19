@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"fmt"
-	"tool/app/global/variable"
+	"tool/global/variable"
 	"tool/pkg/yml_config"
 )
 

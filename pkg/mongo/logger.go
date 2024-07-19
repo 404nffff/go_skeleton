@@ -3,7 +3,7 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"tool/app/global/variable"
+	"tool/global/variable"
 
 	"go.mongodb.org/mongo-driver/event"
 	"go.uber.org/zap"

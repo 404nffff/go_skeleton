@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"time"
-	"tool/app/global/variable"
+	"tool/global/variable"
 	"tool/pkg/yml_config/ymlconfig_interf"
 
 	"github.com/spf13/viper"
