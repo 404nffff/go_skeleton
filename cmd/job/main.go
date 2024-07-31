@@ -5,11 +5,11 @@ import (
 	"net"
 	"os"
 	"tool/bootstrap"
-	"tool/app/global/variable"
+	"tool/global/variable"
 )
 
 func main() {
-	
+
 	// 初始化全局变量
 	bootstrap.Initialize()
 

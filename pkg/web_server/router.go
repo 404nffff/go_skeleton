@@ -20,7 +20,6 @@ type Route struct {
 // RouterConfig 保存路由器的配置
 type RouterConfig struct {
 	AppDebug          bool              // 是否开启调试模式
-	AllowCrossDomain  bool              // 是否允许跨域
 	CustomMiddlewares []gin.HandlerFunc // 自定义中间件列表
 }
 

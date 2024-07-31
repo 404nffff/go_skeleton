@@ -7,11 +7,11 @@ import (
 	"tool/pkg/event_manage"
 	"tool/pkg/process"
 	"tool/pkg/web_server"
-	"tool/server/http/middleware"
 
 	"github.com/gin-gonic/gin"
 
-	_ "tool/server/http/routers/api" // 加载api路由
+	"tool/server/websocket/handle"
+	_ "tool/server/websocket/routers" // 加载api路由
 )
 
 func init() {
@@ -28,11 +28,10 @@ func main() {
 func startServerInForeground() {
 
 	config := web_server.RouterConfig{
-		AppDebug:         variable.ConfigYml.GetBool("AppDebug"),
-		AllowCrossDomain: variable.ConfigYml.GetBool("HttpServer.AllowCrossDomain"),
+		AppDebug:          variable.ConfigYml.GetBool("AppDebug"),
 		CustomMiddlewares: []gin.HandlerFunc{
-			middleware.SessionMiddleware(),
-			middleware.ValidateParams(),
+			//middleware.SessionMiddleware(),
+			//middleware.ValidateParams(),
 		},
 	}
 
@@ -61,6 +60,8 @@ func startServerInForeground() {
 	}
 
 	server := web_server.NewServer(webConfig)
+
+	go handle.HandleMsg()
 
 	server.Start()
 

@@ -11,7 +11,7 @@ func init() {
 	web_server.RegisterRoutes("",
 		web_server.Route{
 			Method:  "GET",
-			Path:    "/echo",
+			Path:    "/join",
 			Handler: handle.Join,
 		},
 	)

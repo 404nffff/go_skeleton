@@ -29,7 +29,6 @@ func startServerInForeground() {
 
 	config := web_server.RouterConfig{
 		AppDebug:         variable.ConfigYml.GetBool("AppDebug"),
-		AllowCrossDomain: variable.ConfigYml.GetBool("HttpServer.AllowCrossDomain"),
 		CustomMiddlewares: []gin.HandlerFunc{
 			middleware.SessionMiddleware(),
 			middleware.ValidateParams(),
