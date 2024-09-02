@@ -19,3 +19,5 @@ bin/
 *.bak
 go.sum
 tmp
+
+vendor

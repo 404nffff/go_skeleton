@@ -3,6 +3,7 @@ package yml_config
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"time"
 	"tool/global/variable"
 	"tool/pkg/yml_config/ymlconfig_interf"
@@ -14,8 +15,15 @@ type ymlConfig struct {
 	viper *viper.Viper
 }
 
+var configLock sync.Mutex
+
 // 加载配置文件
 func LoadConfig(configName string) ymlconfig_interf.YmlConfigInterf {
+
+	//加锁
+	configLock.Lock()
+
+	defer configLock.Unlock()
 
 	basePath := variable.BasePath
 

@@ -1,0 +1,12 @@
+MiniPro: # 小程序配置
+  Default:
+    AppId: 'wx1234567890'
+    AppSecret: '1234567890abcdef1234567890abcdef'
+    Debug: true
+    Log:
+      level: 'debug'
+      file: '../logs/wechat.log'
+    Redis:
+      Host: ''
+      DB: 0
+      Password: ''
