@@ -1,6 +1,8 @@
 package miniprogram
 
-import "tool/pkg/yml_config"
+import (
+	"tool/pkg/yml_config"
+)
 
 // LogConfig 日志配置
 type LogConfig struct {
@@ -8,7 +10,7 @@ type LogConfig struct {
 	Path  string
 }
 
-//RedisConfig redis配置
+// RedisConfig redis配置
 type RedisConfig struct {
 	Addr     string
 	Password string
@@ -27,22 +29,22 @@ type Config struct {
 func loadConfig(name string) *Config {
 	config := yml_config.LoadConfig("wechat")
 
-	if config.GetString(name+".AppID") == "" {
+	if config.GetString("MiniPro."+name+".AppID") == "" {
 		panic("Failed to get wechat config")
 	}
 
 	return &Config{
-		AppID:  config.GetString(name + ".AppID"),
-		Secret: config.GetString(name + ".Secret"),
-		Debug:  config.GetBool(name + ".Debug"),
+		AppID:  config.GetString("MiniPro." + name + ".AppID"),
+		Secret: config.GetString("MiniPro." + name + ".AppSecret"),
+		Debug:  config.GetBool("MiniPro." + name + ".Debug"),
 		Redis: RedisConfig{
-			Addr:     config.GetString(name + ".Redis.Addr"),
-			Password: config.GetString(name + ".Redis.Password"),
-			DB:       config.GetInt(name + ".Redis.DB"),
+			Addr:     config.GetString("MiniPro." + name + ".Redis.Addr"),
+			Password: config.GetString("MiniPro." + name + ".Redis.Password"),
+			DB:       config.GetInt("MiniPro." + name + ".Redis.DB"),
 		},
 		Log: LogConfig{
-			Level: config.GetString(name + ".Log.Level"),
-			Path: config.GetString(name + ".Log.Path"),
+			Level: config.GetString("MiniPro." + name + ".Log.Level"),
+			Path:  config.GetString("MiniPro." + name + ".Log.Path"),
 		},
 	}
 }

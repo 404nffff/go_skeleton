@@ -30,7 +30,7 @@ func startServerInForeground() {
 	config := web_server.RouterConfig{
 		AppDebug:         variable.ConfigYml.GetBool("AppDebug"),
 		CustomMiddlewares: []gin.HandlerFunc{
-			middleware.SessionMiddleware(),
+			//middleware.SessionMiddleware(),
 			middleware.ValidateParams(),
 			middleware.Cors(),
 		},

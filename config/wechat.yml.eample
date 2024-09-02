@@ -4,9 +4,9 @@ MiniPro: # 小程序配置
     AppSecret: '1234567890abcdef1234567890abcdef'
     Debug: true
     Log:
-      level: 'debug'
-      file: '../logs/wechat.log'
+      Level: 'error'
+      Path: 'wechat.log'
     Redis:
-      Host: ''
+      Addr: ''
       DB: 0
       Password: ''

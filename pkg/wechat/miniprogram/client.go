@@ -1,6 +1,8 @@
 package miniprogram
 
 import (
+	"fmt"
+
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/miniProgram"
 )
@@ -24,6 +26,8 @@ func NewMiniProgramClient(name string) *miniProgram.MiniProgram {
 			DB:       config.Redis.DB,
 		}),
 	})
+
+	fmt.Println(MiniProgramApp)
 
 	if err != nil {
 		return nil
