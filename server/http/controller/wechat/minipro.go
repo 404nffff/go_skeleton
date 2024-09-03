@@ -2,22 +2,30 @@ package wechat
 
 import (
 	"fmt"
+	"tool/server/http/request"
 
 	"github.com/gin-gonic/gin"
 )
 
-type AuthParams struct {
-	Code string `json:"code"  binding:"required"`
-}
-
 func Auth(c *gin.Context) {
+
+	params, _ := c.Get("params")
+
+	fmt.Println(params.(*request.AuthParams).Code)
 
 	//miniprogramClient := miniprogram.NewMiniProgramClient("Default")
 
-	var params AuthParams
-	c.ShouldBindJSON(params)
+	// var params AuthParams
 
-	fmt.Println(params)
+	// if error := c.ShouldBindJSON(&params); error != nil {
+	// 	c.JSON(200, gin.H{
+	// 		"code": 1,
+	// 		"msg":  error.Error(),
+	// 	})
+	// 	return
+	// }
+
+	// fmt.Println(params)
 
 	// ctx := c.Request.Context()
 

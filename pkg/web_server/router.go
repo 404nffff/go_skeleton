@@ -2,6 +2,7 @@ package web_server
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 
 	"github.com/gin-contrib/pprof"
@@ -13,8 +14,9 @@ import (
 type Route struct {
 	Method      string            // HTTP 方法（GET, POST 等）
 	Path        string            // 路由路径
-	Handler     gin.HandlerFunc   // 处理函数
+	Handlers    []gin.HandlerFunc // 处理函数列表
 	Middlewares []gin.HandlerFunc // 路由特定的中间件
+	Params      reflect.Type      // 路由参数
 }
 
 // RouterConfig 保存路由器的配置
@@ -35,12 +37,14 @@ var (
 	once             sync.Once                    // 确保只初始化一次
 	routeGroup       map[string][]Route           // 存储路由组
 	middlewaresGroup map[string][]gin.HandlerFunc // 存储中间件组
+	RouteParamMap    map[string]reflect.Type      // 路径到结构体类型的映射
 )
 
 func init() {
 	once.Do(func() {
 		routeGroup = make(map[string][]Route)
 		middlewaresGroup = make(map[string][]gin.HandlerFunc)
+		RouteParamMap = make(map[string]reflect.Type)
 	})
 }
 
@@ -102,13 +106,14 @@ func (r *Router) initRoutes() {
 
 		// 为组添加路由
 		for _, route := range routes {
-			handlers := []gin.HandlerFunc{route.Handler}
 
-			// 检查路由是否有中间件
-			if len(route.Middlewares) > 0 {
-				handlers = append(route.Middlewares, route.Handler)
+			if route.Params != nil {
+
+				// 将路由路径和参数类型映射起来
+				RouteParamMap[prefix+route.Path] = route.Params
 			}
 
+			handlers := append(route.Middlewares, route.Handlers...)
 			group.Handle(route.Method, route.Path, handlers...)
 		}
 	}
@@ -130,7 +135,6 @@ func RegisterRoutes(prefix string, routes ...Route) {
 
 // RegisterMiddleware 注册中间件到全局路由器
 func RegisterMiddleware(prefix string, middlewares ...gin.HandlerFunc) {
-
 	for _, middleware := range middlewares {
 		middlewaresGroup[prefix] = append(middlewaresGroup[prefix], middleware)
 	}
@@ -138,11 +142,9 @@ func RegisterMiddleware(prefix string, middlewares ...gin.HandlerFunc) {
 
 // InitRouter 初始化并返回全局路由器的 gin.Engine
 func InitRouter(config RouterConfig) *gin.Engine {
-
 	globalRouter = &Router{
 		config: config,
 	}
-
 	return GetGlobalRouter().Init()
 }
 

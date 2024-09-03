@@ -1,13 +1,5 @@
 package api
 
-import (
-	"tool/pkg/web_server"
-	"tool/server/http/controller"
-	"tool/server/http/middleware"
-
-	"github.com/gin-gonic/gin"
-)
-
 func init() {
 
 	//     // 注册路由到 "/api/v1" 路由组
@@ -68,58 +60,58 @@ func init() {
 
 	//web_server.RegisterMiddleware("/user", middleware.AuthMiddleware())
 
-	web_server.RegisterRoutes("",
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/test",
-			Handler: controller.Test,
-		},
-	)
+	// web_server.RegisterRoutes("",
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/test",
+	// 		Handler: controller.Test,
+	// 	},
+	// )
 
-	// 注册路由到 "/user" 路由组
-	web_server.RegisterRoutes("/user",
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/test",
-			Handler: controller.Test,
-		},
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/test2",
-			Handler: controller.Test2,
-		},
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/user",
-			Handler: controller.GetUsersHandler,
-		},
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/user2",
-			Handler: controller.GetUserMongo,
-		},
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/testudp",
-			Handler: controller.TestUdp,
-		},
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/task",
-			Handler: controller.TestAnt,
-		},
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/s",
-			Handler: controller.StatusAnt,
-		},
-		web_server.Route{
-			Method:  "GET",
-			Path:    "/login",
-			Handler: controller.GetUsersHandler,
-			Middlewares: []gin.HandlerFunc{
-				middleware.AuthMiddleware(),
-			},
-		})
+	// // 注册路由到 "/user" 路由组
+	// web_server.RegisterRoutes("/user",
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/test",
+	// 		Handler: controller.Test,
+	// 	},
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/test2",
+	// 		Handler: controller.Test2,
+	// 	},
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/user",
+	// 		Handler: controller.GetUsersHandler,
+	// 	},
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/user2",
+	// 		Handler: controller.GetUserMongo,
+	// 	},
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/testudp",
+	// 		Handler: controller.TestUdp,
+	// 	},
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/task",
+	// 		Handler: controller.TestAnt,
+	// 	},
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/s",
+	// 		Handler: controller.StatusAnt,
+	// 	},
+	// 	web_server.Route{
+	// 		Method:  "GET",
+	// 		Path:    "/login",
+	// 		Handler: controller.GetUsersHandler,
+	// 		Middlewares: []gin.HandlerFunc{
+	// 			middleware.AuthMiddleware(),
+	// 		},
+	// 	})
 
 }

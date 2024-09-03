@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"tool/global/utils/common"
-	web_validate "tool/server/http/validator"
+	"tool/pkg/web_server"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -19,8 +19,9 @@ var validate = validator.New()
 func ValidateParams() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		route := c.FullPath()
-		paramType, exists := web_validate.RouteParamMap[route]
+		paramType, exists := web_server.RouteParamMap[route]
 		if !exists {
+			c.Set("params", nil)
 			c.Next()
 			return
 		}
@@ -38,6 +39,10 @@ func ValidateParams() gin.HandlerFunc {
 			handleValidationError(c, err)
 			return
 		}
+
+		//传递参数
+		c.Set("params", params)
+
 		c.Next()
 	}
 }
