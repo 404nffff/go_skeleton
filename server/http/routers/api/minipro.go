@@ -1,8 +1,10 @@
 package api
 
 import (
+	"reflect"
 	"tool/pkg/web_server"
 	"tool/server/http/controller/wechat"
+	"tool/server/http/request/wechat/minipro"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +17,7 @@ func init() {
 			Method:   "POST",
 			Path:     "/auth",
 			Handlers: []gin.HandlerFunc{wechat.Auth},
-			//Params:   reflect.TypeOf(request.AuthParams{}),
+			Params:   reflect.TypeOf(minipro.AuthParams{}),
 		},
 	)
 }

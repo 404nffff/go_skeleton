@@ -2,43 +2,36 @@ package wechat
 
 import (
 	"fmt"
-	"tool/server/http/request"
+	"tool/global/utils/common"
+	"tool/global/utils/wechat"
+	"tool/server/http/request/wechat/minipro"
 
 	"github.com/gin-gonic/gin"
 )
 
+// Auth 小程序登录
 func Auth(c *gin.Context) {
 
 	params, _ := c.Get("params")
 
-	fmt.Println(params.(*request.AuthParams).Code)
+	code := params.(*minipro.AuthParams).Code
 
-	//miniprogramClient := miniprogram.NewMiniProgramClient("Default")
+	miniprogramClient := wechat.MiniProDefaultClient()
 
-	// var params AuthParams
+	ctx := c.Request.Context()
 
-	// if error := c.ShouldBindJSON(&params); error != nil {
-	// 	c.JSON(200, gin.H{
-	// 		"code": 1,
-	// 		"msg":  error.Error(),
-	// 	})
-	// 	return
-	// }
+	// 获取用户信息
+	userInfo, err := miniprogramClient.Auth.Session(ctx, code)
 
-	// fmt.Println(params)
+	if err != nil {
+		common.Fail(c, 400, err.Error(), nil)
+	}
 
-	// ctx := c.Request.Context()
+	fmt.Println(userInfo.OpenID)
 
-	// // 获取用户信息
-	// userInfo, err := miniprogramClient.Auth.Session(ctx, code)
+	if userInfo.UnionID == "" {
+		userInfo.UnionID = userInfo.OpenID
+	}
 
-	// if err != nil {
-	// 	c.JSON(200, gin.H{
-	// 		"code": 1,
-	// 		"msg":  err.Error(),
-	// 	})
-	// 	return
-	// }
-
-	// fmt.Println(userInfo)
+	fmt.Println(userInfo)
 }
