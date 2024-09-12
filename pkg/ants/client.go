@@ -12,25 +12,49 @@ import (
 	"github.com/panjf2000/ants/v2"
 )
 
+// AntsInterface 是一个定义使用 ants 管理和执行任务的方法的接口。
 type AntsInterface interface {
+	// Submit 提交一个任务给 ants 执行。
+	// 它接受一个任务函数作为参数，并在提交失败时返回一个错误。
 	Submit(task func()) error
+
+	// Release 释放 ants 使用的所有资源。
 	Release()
+
+	// GetStatus 返回 ants 的当前状态，包括正在运行和等待的 goroutine 数量。
+	// 它返回两个整数，分别表示正在运行和等待的 goroutine 数量。
 	GetStatus() (int, int)
+
+	// SubmitTask 提交一个带有额外参数的任务给 ants 执行。
+	// 它接受一个任务函数、一个参数映射，并返回一个结果映射和一个错误，如果提交失败。
 	SubmitTask(ctx context.Context, task func(params map[string]any) (map[string]any, error), params map[string]any) (map[string]any, error)
+
+	// Push 将一个带有额外参数的任务推送到任务队列中，由 ants 执行。
+	// 它接受一个上下文、一个函数和可变参数，并返回一个字符串和一个错误。
 	Push(ctx context.Context, fn any, params ...any) (string, error)
-	Exec(ctx context.Context, timeout time.Duration) (map[string]any, error)
+
+	// Exec 使用 ants 执行任务队列中的任务。
+	// 它接受一个上下文，并返回一个结果映射和一个错误。
+	Exec(ctx context.Context) (map[string]any, map[string]error)
+
+	// SetTimeout 设置 ants 的超时时间。
+	// 它接受一个时间持续时间作为参数。
+	SetTimeout(timeout time.Duration)
 }
 
+// 协程池
 type Ants struct {
-	pool     *ants.Pool
-	taskPool sync.Map
-	mu       sync.RWMutex
+	pool        *ants.Pool    // 协程池
+	taskPool    sync.Map      // 任务池
+	mu          sync.RWMutex  // 读写锁
+	taskTimeOut time.Duration // 任务超时时间
 }
 
+// 任务函数
 type taskFunc struct {
-	method any
-	params []any
-	id     string
+	method any    // 函数
+	params []any  // 参数
+	id     string // 任务ID
 }
 
 var taskFuncPool = sync.Pool{
@@ -44,7 +68,7 @@ func NewAnts(poolSize int) (AntsInterface, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ants pool: %w", err)
 	}
-	return &Ants{pool: pool}, nil
+	return &Ants{pool: pool, taskTimeOut: 10 * time.Second}, nil
 }
 
 func (a *Ants) Submit(task func()) error {
@@ -53,12 +77,14 @@ func (a *Ants) Submit(task func()) error {
 
 func (a *Ants) Release() {
 	a.pool.Release()
+	a.taskPool = sync.Map{}
 }
 
 func (a *Ants) GetStatus() (int, int) {
 	return a.pool.Running(), a.pool.Cap()
 }
 
+// SubmitTask 提交一个带有额外参数的任务给 ants 执行。
 func (a *Ants) SubmitTask(ctx context.Context, task func(params map[string]any) (map[string]any, error), params map[string]any) (map[string]any, error) {
 	resultChan := make(chan struct {
 		result map[string]any
@@ -86,6 +112,7 @@ func (a *Ants) SubmitTask(ctx context.Context, task func(params map[string]any) 
 	}
 }
 
+// Push 将一个带有额外参数的任务推送到任务队列中，由 ants 执行。
 func (a *Ants) Push(ctx context.Context, fn any, params ...any) (string, error) {
 	if reflect.TypeOf(fn).Kind() != reflect.Func {
 		return "", errors.New("fn must be a function")
@@ -119,11 +146,15 @@ func (a *Ants) Push(ctx context.Context, fn any, params ...any) (string, error) 
 	return id, nil
 }
 
-func (a *Ants) Exec(ctx context.Context, timeout time.Duration) (map[string]any, error) {
+// Exec 使用 ants 执行任务队列中的任务。
+func (a *Ants) Exec(ctx context.Context) (map[string]any, map[string]error) {
 	a.mu.Lock()
 	defer func() {
 		a.mu.Unlock()
 		a.taskPool.Delete(ctx)
+
+		//设置超时时间
+		a.taskTimeOut = 10 * time.Second
 	}()
 
 	tasksInterface, ok := a.taskPool.Load(ctx)
@@ -139,13 +170,16 @@ func (a *Ants) Exec(ctx context.Context, timeout time.Duration) (map[string]any,
 
 	tasks := tasksSliceInterface.([]taskFunc)
 	taskResults := sync.Map{}
-	errs := make([]error, len(tasks))
+	errs := make(map[string]error, len(tasks)+1)
 
 	var wg sync.WaitGroup
 	wg.Add(len(tasks))
 
-	for i, task := range tasks {
-		i, task := i, task
+	for _, task := range tasks {
+		task := task
+
+		errs[task.id] = nil
+
 		err := a.pool.Submit(func() {
 			defer wg.Done()
 			defer taskFuncPool.Put(&task)
@@ -156,13 +190,14 @@ func (a *Ants) Exec(ctx context.Context, timeout time.Duration) (map[string]any,
 
 				f := reflect.ValueOf(task.method)
 				if f.Kind() != reflect.Func {
-					errs[i] = errors.New("task is not a function")
+					errs[task.id] = errors.New("task is not a function")
 					return
 				}
 
-				args := make([]reflect.Value, len(task.params))
+				args := make([]reflect.Value, len(task.params)+1)
+				args[0] = reflect.ValueOf(ctx)
 				for j, param := range task.params {
-					args[j] = reflect.ValueOf(param)
+					args[j+1] = reflect.ValueOf(param)
 				}
 
 				result := f.Call(args)
@@ -170,18 +205,18 @@ func (a *Ants) Exec(ctx context.Context, timeout time.Duration) (map[string]any,
 					taskResults.Store(task.id, result[0].Interface())
 				}
 				if len(result) > 1 && !result[1].IsNil() {
-					errs[i] = result[1].Interface().(error)
+					errs[task.id] = result[1].Interface().(error)
 				}
 			}()
 
 			select {
 			case <-done:
 			case <-ctx.Done():
-				errs[i] = ctx.Err()
+				errs[task.id] = ctx.Err()
 			}
 		})
 		if err != nil {
-			errs[i] = fmt.Errorf("failed to submit task: %w", err)
+			errs[task.id] = fmt.Errorf("failed to submit task: %w", err)
 		}
 	}
 
@@ -193,17 +228,20 @@ func (a *Ants) Exec(ctx context.Context, timeout time.Duration) (map[string]any,
 
 	select {
 	case <-done:
-	case <-time.After(timeout):
-		return nil, fmt.Errorf("execution timed out after %v", timeout)
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	}
+	case <-time.After(a.taskTimeOut):
 
-	var finalErr error
-	for _, err := range errs {
-		if err != nil {
-			finalErr = errors.Join(finalErr, err)
+		for errKey, _ := range errs {
+			errs[errKey] = errors.New("task timeout")
 		}
+
+		return nil, errs
+	case <-ctx.Done():
+
+		for errKey, _ := range errs {
+			errs[errKey] = ctx.Err()
+		}
+
+		return nil, errs
 	}
 
 	results := make(map[string]any)
@@ -212,5 +250,10 @@ func (a *Ants) Exec(ctx context.Context, timeout time.Duration) (map[string]any,
 		return true
 	})
 
-	return results, finalErr
+	return results, errs
+}
+
+// SetTimeout 设置 ants 的超时时间。
+func (a *Ants) SetTimeout(timeout time.Duration) {
+	a.taskTimeOut = timeout
 }
