@@ -30,6 +30,14 @@ type Router struct {
 	engine *gin.Engine  // gin 引擎实例
 	config RouterConfig // 路由器配置
 	logger *zap.Logger  // zap 日志实例
+	groups map[string]*RouterGroup
+}
+
+// RouterGroup 表示一个路由组
+type RouterGroup struct {
+	prefix      string
+	middlewares []gin.HandlerFunc
+	routes      []Route
 }
 
 var (
@@ -151,4 +159,74 @@ func InitRouter(config RouterConfig) *gin.Engine {
 // GetGlobalLogger 获取全局日志器
 func GetGlobalLogger() *zap.Logger {
 	return GetGlobalRouter().GetLogger()
+}
+
+// Group 在现有路由组中创建一个子组
+func Group(prefix string, middlewares ...gin.HandlerFunc) RouterGroup {
+	newGroup := RouterGroup{
+		prefix:      prefix,
+		middlewares: middlewares,
+	}
+
+	return newGroup
+}
+
+// Add 添加一个路由到路由组
+func (rg *RouterGroup) Add(method, path string, handlers ...gin.HandlerFunc) *Route {
+	route := Route{
+		Method:   method,
+		Path:     path,
+		Handlers: handlers,
+	}
+	rg.routes = append(rg.routes, route)
+	return &rg.routes[len(rg.routes)-1]
+}
+
+// GET 是添加 GET 路由的快捷方法
+func (rg *RouterGroup) GET(path string, handlers ...gin.HandlerFunc) *Route {
+	return rg.Add("GET", path, handlers...)
+}
+
+// POST 是添加 POST 路由的快捷方法
+func (rg *RouterGroup) POST(path string, handlers ...gin.HandlerFunc) *Route {
+	return rg.Add("POST", path, handlers...)
+}
+
+// PUT 是添加 PUT 路由的快捷方法
+func (rg *RouterGroup) PUT(path string, handlers ...gin.HandlerFunc) *Route {
+	return rg.Add("PUT", path, handlers...)
+}
+
+// DELETE 是添加 DELETE 路由的快捷方法
+func (rg *RouterGroup) DELETE(path string, handlers ...gin.HandlerFunc) *Route {
+	return rg.Add("DELETE", path, handlers...)
+}
+
+// Params 设置路由参数类型
+func (r *Route) Bind(params interface{}) *Route {
+	r.Params = reflect.TypeOf(params)
+	return r
+}
+
+// Use 添加中间件到路由
+func (r *Route) Use(middlewares ...gin.HandlerFunc) *Route {
+	r.Middlewares = append(r.Middlewares, middlewares...)
+	return r
+}
+
+// ImportRoutes 导入路由到全局路由器
+func ImportRoutes(routerGroups ...RouterGroup) {
+	// 为每个路由组添加路由
+	for _, rg := range routerGroups {
+
+		if rg.middlewares != nil {
+			//注册中间件
+			middlewaresGroup[rg.prefix] = append(middlewaresGroup[rg.prefix], rg.middlewares...)
+		}
+
+		for _, route := range rg.routes {
+			//注册路由
+			routeGroup[rg.prefix] = append(routeGroup[rg.prefix], route)
+		}
+	}
 }
