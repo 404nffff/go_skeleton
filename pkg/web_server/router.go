@@ -35,9 +35,11 @@ type Router struct {
 
 // RouterGroup 表示一个路由组
 type RouterGroup struct {
-	prefix      string
-	middlewares []gin.HandlerFunc
-	routes      []Route
+	prefix        string
+	middlewares   []gin.HandlerFunc
+	routes        []Route
+	beforeHandler []Route // 前置处理函数
+	afterHandler  []Route // 后置处理函数
 }
 
 var (
@@ -202,6 +204,28 @@ func (rg *RouterGroup) DELETE(path string, handlers ...gin.HandlerFunc) *Route {
 	return rg.Add("DELETE", path, handlers...)
 }
 
+// 添加前置处理函数
+func (rg *RouterGroup) Before(handlers ...gin.HandlerFunc) *RouterGroup {
+
+	route := Route{
+		Handlers: append([]gin.HandlerFunc{}, handlers...),
+	}
+
+	rg.beforeHandler = append(rg.beforeHandler, route)
+	return rg
+}
+
+// 添加后置处理函数
+func (rg *RouterGroup) After(handlers ...gin.HandlerFunc) *RouterGroup {
+
+	route := Route{
+		Handlers: append([]gin.HandlerFunc{}, handlers...),
+	}
+
+	rg.afterHandler = append(rg.afterHandler, route)
+	return rg
+}
+
 // Params 设置路由参数类型
 func (r *Route) Bind(params interface{}) *Route {
 	r.Params = reflect.TypeOf(params)
@@ -224,9 +248,29 @@ func ImportRoutes(routerGroups ...RouterGroup) {
 			middlewaresGroup[rg.prefix] = append(middlewaresGroup[rg.prefix], rg.middlewares...)
 		}
 
+		
+
 		for _, route := range rg.routes {
+
+			
+			//注册前置处理函数、把handlers添加到handlers前面
+			if len(rg.beforeHandler) > 0 {
+				for _, before := range rg.beforeHandler {
+					route.Handlers = append(before.Handlers, route.Handlers...)
+				}
+			}
+
+			//注册后置处理函数、把handlers添加到handlers后面
+			if len(rg.afterHandler) > 0 {
+				for _, after := range rg.afterHandler {
+					route.Handlers = append(route.Handlers, after.Handlers...)
+				}
+			}
+
 			//注册路由
 			routeGroup[rg.prefix] = append(routeGroup[rg.prefix], route)
 		}
+
+		
 	}
 }
